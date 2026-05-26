@@ -11,11 +11,6 @@ from django.contrib.auth import views as auth_views  # Django's built-in login/l
 from core import views
 
 urlpatterns = [
-    # ── Django Admin Panel ──────────────────────────────────
-    # URL: /admin/
-    # Built-in admin interface. Login as superuser to access.
-    path('admin/', admin.site.urls),
-
     # ── Public Pages (no login required) ────────────────────
     path('', views.home, name='home'),                           # Landing page
     path('register/', views.register, name='register'),           # User registration
@@ -69,6 +64,10 @@ urlpatterns = [
          name='admin_candidates'),
     path('admin/logs/', views.admin_audit_logs,                    # View audit logs
          name='admin_audit_logs'),
+
+    # ── Django Admin Panel ──────────────────────────────────
+    # Built-in admin interface. Login as superuser to access.
+    path('admin/', admin.site.urls),
 
     # ── API Endpoints ───────────────────────────────────────
     path('api/', include('core.api_urls')),                        # All API routes
