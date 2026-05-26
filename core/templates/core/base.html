@@ -143,7 +143,12 @@
                     <li><a href="{% url 'results' %}">Results</a></li>
                     <li><a href="{% url 'manifesto_tracking' %}">Tracking</a></li>
                     <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
-                    <li><a href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.9rem; font-family: inherit; padding: 0; outline: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ccc'">Logout ({{ user.username }})</button>
+                        </form>
+                    </li>
                 {% else %}
                     <!-- Links for guests -->
                     <li><a href="{% url 'login' %}">Login</a></li>

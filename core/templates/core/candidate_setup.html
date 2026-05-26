@@ -6,16 +6,54 @@
     <p class="mb-20">You registered as a candidate. Please complete your profile to appear in the election.</p>
     <form method="post">
         {% csrf_token %}
-        <label>Select Election:</label>
-        <select name="election" required>
+        <label for="electionSelect">Select Election:</label>
+        <select name="election" id="electionSelect" required>
             <option value="">-- Choose Election --</option>
             {% for e in elections %}
                 <option value="{{ e.id }}">{{ e.title }} (ends {{ e.end_date|date:"M d" }})</option>
             {% endfor %}
         </select>
-        {{ form.as_p }}
+
+        <label for="positionSelect">Select Position:</label>
+        <select name="position" id="positionSelect" required>
+            <option value="">-- Choose Position (Select Election First) --</option>
+            {% for p in positions %}
+                <option value="{{ p.id }}" data-election="{{ p.election.id }}" style="display: none;">{{ p.title }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="id_bio">Biography:</label>
+        <textarea name="bio" id="id_bio" placeholder="Tell the voters about your experience and plans..." required></textarea>
+
+        <label for="id_photo">Photo URL (optional):</label>
+        <input type="url" name="photo" id="id_photo" placeholder="https://example.com/your-photo.jpg">
+
         <button type="submit" class="btn">Submit for Approval</button>
     </form>
+
+    <script>
+        document.getElementById('electionSelect').addEventListener('change', function() {
+            const electionId = this.value;
+            const positionSelect = document.getElementById('positionSelect');
+            const options = positionSelect.querySelectorAll('option');
+            
+            positionSelect.value = "";
+            
+            options.forEach(opt => {
+                if (opt.value === "") {
+                    opt.textContent = electionId ? "-- Choose Position --" : "-- Choose Position (Select Election First) --";
+                    opt.style.display = "";
+                    return;
+                }
+                
+                if (opt.dataset.election === electionId) {
+                    opt.style.display = "";
+                } else {
+                    opt.style.display = "none";
+                }
+            });
+        });
+    </script>
 </div>
 <style>
     form p { margin-bottom: 15px; }

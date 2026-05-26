@@ -109,15 +109,23 @@ class Command(BaseCommand):
 
         now = timezone.now()
 
+        # ── Pre-compute Hashed Passwords ───────────────────────────
+        self.stdout.write('Pre-computing password hashes...')
+        hashed_admin_pwd = make_password('admin123')
+        hashed_voter_pwd = make_password('voter123')
+        hashed_cand_pwd = make_password('cand123')
+
         # ── 5 Admins ──────────────────────────────────────────────
         self.stdout.write('Creating 5 admins...')
+        admin_users = []
         for uname, pwd, first, last, sid in ADMINS_DATA:
-            User.objects.create_user(
-                username=uname, password=pwd, email=f'{uname}@cuea.edu',
+            admin_users.append(User(
+                username=uname, password=hashed_admin_pwd, email=f'{uname}@cuea.edu',
                 role='admin', is_staff=True, is_superuser=(uname == 'admin'),
                 is_verified=True, student_id=sid,
                 first_name=first, last_name=last,
-            )
+            ))
+        User.objects.bulk_create(admin_users)
 
         # ── 600 Voters ─────────────────────────────────────────────
         self.stdout.write('Creating 600 voters...')
@@ -129,7 +137,7 @@ class Command(BaseCommand):
             voter_batch.append(User(
                 username=f'v{i:04d}',
                 email=f'v{i:04d}@cuea.edu',
-                password=make_password('voter123'),
+                password=hashed_voter_pwd,
                 role='voter', is_verified=True,
                 student_id=f'{abbr}-2024/{i:04d}',
                 first_name=f'Student{i}',
@@ -176,17 +184,23 @@ class Command(BaseCommand):
 
         # ── 10 Candidates ──────────────────────────────────────────
         self.stdout.write('Creating 10 candidates...')
-        candidates = []
-        schools_list = [d[3] for d in CANDIDATES_DATA]
-
+        candidate_users = []
         for idx, (uname, pwd, first, last, school, bio) in enumerate(CANDIDATES_DATA):
-            u = User.objects.create_user(
-                username=uname, password=pwd, email=f'{uname}@cuea.edu',
+            u = User(
+                username=uname, password=hashed_cand_pwd, email=f'{uname}@cuea.edu',
                 role='candidate', is_verified=True,
                 student_id=f'{SCHOOL_ABBR[school]}-CAND/{idx+1:03d}',
                 first_name=first, last_name=last,
             )
-            # Spread across elections: 3 in 2024, 3 in 2025, 4 in 2026
+            candidate_users.append(u)
+        
+        # Save users first to get their IDs
+        User.objects.bulk_create(candidate_users)
+        saved_cand_users = {u.username: u for u in User.objects.filter(role='candidate')}
+
+        candidates = []
+        for idx, (uname, pwd, first, last, school, bio) in enumerate(CANDIDATES_DATA):
+            u = saved_cand_users[uname]
             if idx < 3:
                 election, positions = e2024, pos_2024
             elif idx < 6:
@@ -195,53 +209,57 @@ class Command(BaseCommand):
                 election, positions = e2026, pos_2026
 
             pos = positions[idx % len(positions)]
-            c = Candidate.objects.create(
+            candidates.append(Candidate(
                 user=u, position=pos, election=election,
                 bio=bio, is_approved=True,
-            )
-            candidates.append(c)
-
-        self.stdout.write(f'  Candidates: {Candidate.objects.count()}')
+            ))
+        Candidate.objects.bulk_create(candidates)
+        
+        # Re-fetch candidates with database IDs
+        candidates = list(Candidate.objects.all())
+        self.stdout.write(f'  Candidates: {len(candidates)}')
 
         # ── 50+ Manifestos ────────────────────────────────────────
         self.stdout.write('Creating 50 manifestos...')
         categories = list(MANIFESTO_TEMPLATES.keys())
+        manifestos_batch = []
 
         for c in candidates:
-            # 5 manifestos per candidate = 50
             chosen_cats = random.choices(categories, k=5)
             for i, cat in enumerate(chosen_cats):
                 templates = MANIFESTO_TEMPLATES[cat]
                 title, desc = templates[i % len(templates)]
-                Manifesto.objects.create(candidate=c, title=title, description=desc, category=cat)
-
+                manifestos_batch.append(Manifesto(
+                    candidate=c, title=title, description=desc, category=cat
+                ))
+        Manifesto.objects.bulk_create(manifestos_batch)
         all_manifestos = list(Manifesto.objects.all())
         self.stdout.write(f'  Manifestos: {len(all_manifestos)}')
 
         # ── Votes from 600 voters on past elections ───────────────
         self.stdout.write('Casting votes from 600 voters...')
         all_voters = list(User.objects.filter(role='voter'))
+        vote_batch = []
 
         for election, positions in [(e2024, pos_2024), (e2025, pos_2025)]:
-            voter_subset = random.sample(all_voters, 500)  # 500 out of 600 voted
+            voter_subset = random.sample(all_voters, 500)
             for voter in voter_subset:
                 for pos in positions:
-                    pool = list(Candidate.objects.filter(position=pos, election=election))
+                    pool = [c for c in candidates if c.position_id == pos.id and c.election_id == election.id]
                     if pool:
-                        Vote.objects.create(
+                        vote_batch.append(Vote(
                             voter=voter, candidate=random.choice(pool),
                             position=pos, election=election,
                             timestamp=election.start_date + timedelta(hours=random.randint(1, 167)),
-                        )
-            self.stdout.write(f'  {election.title}: {Vote.objects.filter(election=election).count()} votes')
+                        ))
+        Vote.objects.bulk_create(vote_batch, batch_size=500)
+        self.stdout.write(f'  Votes Cast: {len(vote_batch)}')
 
         # ── Tracking updates: 70% completed ────────────────────────
         self.stdout.write('Creating tracking updates (70% completed)...')
-        update_count = 0
+        update_batch = []
         for manifesto in all_manifestos:
-            # 1-3 updates per manifesto
             for ui in range(random.randint(1, 3)):
-                # 70% chance completed, rest split among in_progress/delayed
                 roll = random.random()
                 if roll < 0.70:
                     status = 'completed'
@@ -255,9 +273,9 @@ class Command(BaseCommand):
                 days_after = random.randint(30, 300)
                 evidence = ''
                 if status == 'completed' and random.random() > 0.3:
-                    evidence = f'https://cuea.edu/reports/manifesto/{manifesto.id}'
+                    evidence = f'/candidate/manifestos/{manifesto.id}/updates/'
 
-                ManifestoUpdate.objects.create(
+                update_batch.append(ManifestoUpdate(
                     manifesto=manifesto,
                     status=status,
                     description={
@@ -268,23 +286,22 @@ class Command(BaseCommand):
                     }[status],
                     evidence_url=evidence,
                     created_at=manifesto.candidate.election.end_date + timedelta(days=days_after),
-                )
-                update_count += 1
-
-        self.stdout.write(f'  Updates: {update_count}')
+                ))
+        ManifestoUpdate.objects.bulk_create(update_batch)
+        self.stdout.write(f'  Updates: {len(update_batch)}')
 
         # ── Ratings from voters on manifestos ─────────────────────
         self.stdout.write('Creating user ratings on manifestos...')
-        rating_count = 0
-        # Each manifesto gets ~10-15 ratings from random voters
+        rating_batch = []
+        completed_manifesto_ids = set(
+            u.manifesto_id for u in update_batch if u.status == 'completed'
+        )
+
         for manifesto in all_manifestos:
             num_ratings = random.randint(10, 15)
             raters = random.sample(all_voters, min(num_ratings, len(all_voters)))
             for rater in raters:
-                # Completed manifestos get higher ratings
-                has_completed = ManifestoUpdate.objects.filter(
-                    manifesto=manifesto, status='completed'
-                ).exists()
+                has_completed = manifesto.id in completed_manifesto_ids
                 if has_completed:
                     rating = random.choices([4, 5, 3, 2], weights=[0.5, 0.3, 0.15, 0.05], k=1)[0]
                 else:
@@ -304,13 +321,12 @@ class Command(BaseCommand):
                 ]
                 comment = random.choice(comments_pool) if random.random() > 0.3 else ''
 
-                ManifestoRating.objects.create(
+                rating_batch.append(ManifestoRating(
                     user=rater, manifesto=manifesto,
                     rating=rating, comment=comment,
-                )
-                rating_count += 1
-
-        self.stdout.write(f'  Ratings: {rating_count}')
+                ))
+        ManifestoRating.objects.bulk_create(rating_batch, batch_size=500)
+        self.stdout.write(f'  Ratings: {len(rating_batch)}')
 
         # ── Audit logs ─────────────────────────────────────────────
         AuditLog.objects.create(

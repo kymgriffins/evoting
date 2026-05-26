@@ -236,6 +236,7 @@ def candidate_setup(request):
         return redirect('dashboard')
 
     active_elections = Election.objects.filter(is_active=True)
+    positions = Position.objects.filter(election__in=active_elections)
     if request.method == 'POST':
         form = CandidateForm(request.POST)
         if form.is_valid():
@@ -250,7 +251,7 @@ def candidate_setup(request):
         form = CandidateForm()
 
     return render(request, 'core/candidate_setup.html', {
-        'form': form, 'elections': active_elections,
+        'form': form, 'elections': active_elections, 'positions': positions,
     })
 
 
