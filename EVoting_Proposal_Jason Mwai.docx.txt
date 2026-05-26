@@ -1,0 +1,973 @@
+﻿School of Science
+Department of Computer Science
+Bachelor of Science in Computer Science
+BY
+
+
+Jason Mwai
+Registration No: SCI/00123/2023
+
+
+PROJECT TITLE
+
+
+EVOTING SYSTEM WITH INTEGRATED MANIFESTO TRACKING FOR ENHANCED CANDIDATE ACCOUNTABILITY
+
+
+DATE: MARCH 2026
+Submitted in partial fulfilment of the requirement for the Bachelor of Science in Computer Science
+
+
+
+
+
+
+Declaration and Approval
+Student Declaration
+I, Jason Mwai, declare that this project proposal is my original work and that it has not been presented in any other university or institution for academic credit. Where other sources have been used, they have been duly acknowledged.
+
+
+Signature: __________________________
+Date: 25/03/2026
+Name: Jason Mwai
+Registration No: SCI/00123/2023
+
+
+Supervisor's Approval
+This project proposal has been submitted for examination with my approval as University Supervisor.
+
+
+Signature: __________________________
+Date: __________________________
+Name: Dr.                                                          
+Designation: __________________________
+
+
+
+Acknowledgement
+I wish to express my sincere gratitude to God Almighty for His grace, provision, and guidance throughout this academic journey. Without His sustained strength, this work would not have been possible.
+I am also grateful to the Catholic University of Eastern Africa for providing a conducive academic environment, access to research materials, and the infrastructure necessary for the development of this study.
+Special recognition goes to my family and friends whose encouragement, moral support, and belief in my abilities gave me the motivation to persevere through the demands of this programme. To my colleagues in the Department of Computer Science, thank you for the shared discussions and peer support that enriched this work.
+
+
+
+Abstract
+This project proposes the development of an electronic voting system integrated with manifesto tracking capabilities to enhance candidate accountability in electoral processes. Traditional voting systems, both manual and electronic, often lack mechanisms for voters to verify whether elected officials fulfill their campaign promises after assuming office. This gap contributes to voter apathy, reduced trust in democratic institutions, and poor governance outcomes.
+The proposed system addresses these challenges by providing a secure, web-based platform where candidates can upload detailed manifestos, voters can cast their votes electronically, and all stakeholders can monitor the implementation status of campaign promises post-election. The system incorporates biometric authentication, blockchain-inspired audit trails, and real-time manifesto progress tracking to promote transparency and accountability throughout the electoral cycle.
+The project aims to increase voter participation, promote transparency, and establish a culture of accountability among elected leaders, with an initial pilot at the Catholic University of Eastern Africa. This proposal outlines the research background, problem statement, objectives, comprehensive literature review, development methodology, and project schedule, resources, and budget for the proposed system.
+
+
+Keywords: Electronic Voting, Manifesto Tracking, Candidate Accountability, SSADM, Biometric Authentication, Democratic Transparency.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+Student Declaration        2
+Supervisor's Approval        2
+Acknowledgement        3
+Abstract        4
+List of Tables        6
+List of Figures        6
+List of Terms and Abbreviations        7
+1.1  Background of the Study        8
+1.2  Problem Statement        9
+1.3  Main Objective        9
+1.4  Specific Objectives        10
+1.5  Justification        10
+1.6  Scope        11
+1.7  Proposal Organisation        12
+CHAPTER TWO: LITERATURE REVIEW        13
+2.1  Introduction        13
+2.2  Methodology of Literature Review        13
+2.3  History of the Research Topic        14
+2.4  Review of Related Prototypes and Systems        15
+2.4.1  Case 1: Kenya Integrated Election Management System (KIEMS) – IEBC        15
+2.4.2  Case 2: Estonia's National i-Voting System        16
+2.4.5  Case 5: Brazil's e-Voting System        17
+2.5  Emerging Trends and Patterns        18
+2.6  Research Gap        19
+2.7  Chapter Summary        20
+CHAPTER THREE: METHODOLOGY        21
+3.1  Introduction        21
+3.2  Methodology of Requirement Elicitation        21
+3.3  Methodology for System Analysis        22
+3.4  Methodology for System Design        25
+3.5  Methodology for System Implementation        28
+3.6  Methodology for System Testing        29
+3.7  Methodology for System Deployment        29
+CHAPTER FOUR: SCHEDULE, RESOURCES AND BUDGET        30
+4.1  Introduction        30
+4.2  Project Schedule        30
+4.3  Project Resources        31
+4.4  Project Budget        32
+4.5  Chapter Summary        34
+REFERENCES        34
+Appendix A: Fact-Finding Instruments        36
+A.1  Questionnaire for Student Voters        36
+A.2  Interview Guide for Candidates and Electoral Officials        38
+Appendix B: Reviewed Cases – Screenshots        39
+B.1  IEBC KIEMS System Screenshots        39
+B.2  Estonia i-Voting System Screenshots        39
+B.5  Brazil e-Voting Terminal Screenshots        40
+Appendix C: Technology Stack Justification        40
+Appendix D: Security Threat Mitigation Matrix        40
+
+
+
+List of Tables
+Table 1: Comparison of IEBC Kiems System with Proposed System        7
+Table 2: Comparison of Estonia e-Voting System with Proposed System        8
+Table 3: Comparison of Sierra Leone e-Voting System with Proposed System        9
+Table 4: Comparison of India EVM with Proposed System        10
+Table 5: Comparison of Brazil e-Voting System with Proposed System        11
+Table 6: Project Schedule (Gantt Chart)        17
+Table 7: Project Resources        18
+Table 8: Project Budget        19
+
+
+List of Figures
+Figure 1: IEBC Kiems System Voting Process        6
+Figure 2: Estonia e-Voting System Architecture        7
+Figure 3: Sierra Leone e-Voting Process Flow        8
+Figure 4: India EVM Operation Process        9
+Figure 5: Brazil e-Voting Terminal Interface        10
+Figure 6: Context Diagram (SSADM Notation)        14
+Figure 7: Entity Relationship Diagram Notation        15
+
+
+
+List of Terms and Abbreviations
+API – Application Programming Interface        8
+DBMS – Database Management System        8
+DFD – Data Flow Diagram        8
+EVM – Electronic Voting Machine. A standalone device used to record electronic votes.
+ERD – Entity Relationship Diagram. A diagram used to model database structure and relationships.
+IEBC – Independent Electoral and Boundaries Commission. Kenya's national electoral management body.
+JSON – JavaScript Object Notation. A lightweight data interchange format.
+JWT – JSON Web Token. A stateless authentication mechanism for web applications.
+MVC – Model-View-Controller. A software architectural design pattern.
+ORM – Object-Relational Mapper. A tool that maps database records to programming language objects.
+RBAC – Role-Based Access Control. A method of restricting system access based on user roles.
+REST – Representational State Transfer. An architectural style for designing networked APIs.
+SQL – Structured Query Language. A language for managing relational databases.
+SSADM – Structured Systems Analysis and Design Methodology. A structured approach to system development.
+UI – User Interface. The visual components through which users interact with a system.
+UX – User Experience. The overall quality of a user's interaction with a system.
+VVPAT – Voter-Verified Paper Audit Trail. A physical record that allows voters to verify their vote.
+
+
+
+
+
+
+
+
+
+
+CHAPTER ONE: INTRODUCTION
+1.1  Background of the Study
+Democratic elections form the cornerstone of governance systems worldwide, providing citizens with the opportunity to choose their representatives and to hold them accountable for the exercise of public authority. The integrity of electoral processes is fundamental to the legitimacy of government, and any shortcomings in these processes tend to erode public trust and civic participation. Traditional voting methods, both paper-based and electronic, have faced persistent challenges, including voter fraud, logistical inefficiencies, lack of transparency, and, critically, a growing disconnect between campaign promises and post-election performance of elected officials.
+Electronic voting systems have emerged as a technological response to some of these challenges, offering improvements in efficiency, accuracy, accessibility, and verifiability. Countries such as Estonia, Brazil, and India have successfully implemented e-voting systems over several decades, each demonstrating that technology can enhance different dimensions of the electoral process. In Kenya, the Independent Electoral and Boundaries Commission (IEBC) adopted the Kenya Integrated Election Management System (KIEMS), which employs biometric voter identification and electronic result transmission. While KIEMS represents a significant step forward, it primarily addresses logistical aspects of voting rather than the broader accountability framework needed to sustain democratic governance.
+The concept of manifesto tracking as a systematic accountability mechanism has gained increasing attention. A candidate's manifesto serves as a formal public commitment to voters, articulating policy intentions and developmental priorities. Once a candidate is elected, there is barely any structured, technology-enabled mechanism through which voters can monitor whether those commitments are being honoured. This accountability gap contributes significantly to voter disillusionment, declining civic engagement, and weakened democratic culture, particularly among younger, digitally literate populations.
+The proposed system addresses this gap by integrating secure electronic voting with a manifesto presentation and post-election tracking module. By combining these two functions in a single platform, the system aims to transform the electoral process from a single-day event into an ongoing democratic engagement tool that strengthens the relationship between elected officials and their constituents. The Catholic University of Eastern Africa (CUEA) student government elections provide an appropriate and manageable pilot context for this innovation.
+1.2  Problem Statement
+Despite the adoption of electronic voting systems in various jurisdictions, a significant disconnect persists between the voting process and the subsequent accountability of elected officials. Existing e-voting systems primarily focus on secure vote capture and transmission, overlooking the critical need for mechanisms that enable voters to verify whether candidates fulfill their campaign promises after assuming office.
+This gap manifests in several concrete ways:
+* Voters often lack access to comprehensive, standardised, and comparable candidate manifesto information at the time of voting.
+* After elections, there is no centralised, publicly accessible platform through which citizens can track the implementation of campaign promises.
+* Elected officials have no structured institutional mechanism to report on manifesto progress, making proactive accountability difficult to demonstrate.
+* The absence of structured accountability mechanisms contributes to voter apathy, declining trust in democratic institutions, and a culture of impunity among elected officials.
+* Manual or informal tracking of manifesto promises is inefficient, prone to bias and selective interpretation, and fails to provide real-time, auditable updates.
+Consequently, there is a compelling need for an integrated system that combines secure electronic voting with robust manifesto presentation and post-election tracking capabilities to enhance candidate accountability and promote informed citizen participation.
+1.3  Main Objective
+To develop an electronic voting system with integrated manifesto tracking capabilities that enhances candidate accountability and promotes transparency in electoral processes.
+1.4  Specific Objectives
+* To analyse the requirements for an integrated e-voting and manifesto tracking system through stakeholder consultations and review of existing systems.
+* To design a secure electronic voting system that incorporates candidate manifesto presentation, voter authentication, and post-election accountability features.
+* To implement a web-based system that enables secure voting, manifesto upload by candidates, and real-time tracking of manifesto implementation progress.
+* To test the functionality, security, and usability of the developed system using appropriate testing methodologies including unit, integration, system, and user acceptance testing.
+* To deploy and evaluate the system in a controlled pilot environment to assess its effectiveness in promoting candidate accountability.
+1.5  Justification
+This project addresses a critical gap in electoral systems by integrating accountability mechanisms directly into the voting platform. The proposed system offers significant benefits to multiple stakeholder groups:
+For Voters: The system provides access to comprehensive, comparable candidate manifestos before voting, enabling fully informed electoral choices. Post-election, voters can monitor whether their elected representatives are fulfilling campaign promises, increasing civic engagement and institutional trust.
+For Candidates: The platform offers a structured, standardised channel through which candidates can present their vision and commitments, and subsequently demonstrate accountability to their constituents by reporting on progress against manifesto items.
+For Democratic Governance: By strengthening accountability mechanisms and reducing the disconnect between campaign promises and governance outcomes, the system contributes to the broader goal of deepening democratic culture and good governance through technology.
+The system's novelty lies in the integration of voting and accountability functions within a single platform—an integration that existing e-voting systems have largely neglected.
+1.6  Scope
+The proposed system will encompass the following functional modules:
+* User Management: Registration and authentication for voters, candidates, and system administrators.
+* Voter Authentication: Multi-factor authentication incorporating biometric (fingerprint) verification and institutional ID confirmation to prevent duplicate voting and ensure voter eligibility.
+* Candidate and Manifesto Management: Candidate profiles with categorised, detailed manifestos covering thematic areas such as education, healthcare, infrastructure, and student welfare.
+* Voting Module: Secure electronic ballot casting with end-to-end encryption, blockchain-inspired audit trails, and vote verification mechanisms.
+* Manifesto Tracking Dashboard: Real-time updates on post-election manifesto implementation, using status indicators (Not Started, In Progress, Completed, Delayed) with supporting evidence attachments.
+* Reporting and Analytics: Generation of electoral statistics reports and manifesto tracking metrics accessible to all stakeholders.
+The system will be developed as a web-based application accessible via desktop and mobile browsers. The initial pilot implementation will focus on student government elections at the Catholic University of Eastern Africa. The system is designed with scalability considerations for broader electoral applications but will not replace constitutional electoral processes—it is intended as a supplementary accountability and transparency tool.
+1.7  Proposal Organisation
+This proposal is organised into four chapters. Chapter One provides the background, problem statement, objectives, justification, and scope of the study. Chapter Two presents a comprehensive literature review examining the historical development of e-voting systems, five related existing systems, emerging trends, and the research gap. Chapter Three outlines the methodology to be employed across all phases of system development, from requirement elicitation through to deployment. Chapter Four details the project schedule, required resources, and estimated budget.
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER TWO: LITERATURE REVIEW
+2.1  Introduction
+This chapter presents a comprehensive review of existing literature related to electronic voting systems and accountability mechanisms in electoral processes. The review examines the historical development of e-voting technology, analyses five existing systems and prototypes, identifies emerging trends and patterns, and establishes the research gap that this project seeks to address. The review draws from peer-reviewed journals, technical reports from electoral commissions, and authoritative publications on democratic governance and information systems.
+2.2  Methodology of Literature Review
+The literature review was conducted using a systematic and structured approach to ensure comprehensiveness, relevance, and academic rigor. The following methodology was applied:
+2.2.1  Search Strategy
+Electronic databases searched include Google Scholar, IEEE Xplore, ACM Digital Library, ScienceDirect, and the African Journals Online (AJOL). Search terms used included combinations of: 'electronic voting system', 'e-voting security', 'manifesto tracking', 'candidate accountability', 'digital democracy', 'biometric voting', 'blockchain voting', and 'electoral transparency'. The search was bound to publications between 2015 and 2025 to ensure currency, with older works included where foundational.
+2.2.2  Inclusion and Exclusion Criteria
+Literature was included if it:
+ (a) was published in a peer-reviewed journal, conference proceeding, or official institutional report; (b) addressed electronic voting systems, voter authentication, electoral accountability, or related themes; and (c) was available in the English language. Grey literature from electoral commissions and international development organisations was included due to its operational relevance. Studies primarily focused on offline paper-based systems without electronic components were excluded.
+
+
+2.2.3  Analysis and Synthesis
+Retrieved materials were subjected to thematic analysis, grouping findings into categories: historical development, system architecture and security, voter experience and participation, accountability mechanisms, and emerging technology trends. Comparative tables were developed to systematically contrast existing systems against the proposed system's features, providing a structured basis for identifying the research gap.
+2.3  History of the Research Topic
+The evolution of voting technology spans several decades and reflects the broader trajectory of digital innovation in public sector services. Early automated voting employed punch-card ballots in the United States from the 1960s, introducing the concept of machine-assisted counting but retaining paper as the primary voting medium. The subsequent development of Direct Recording Electronic (DRE) machines in the 1970s and 1980s represented the first fully electronic vote recording systems, eliminating paper ballots altogether (Alvarez & Hall, 2015).
+The most radical innovation came with Estonia's introduction of Internet voting (i-Voting) in 2005, leveraging a national digital identity infrastructure to allow citizens to vote from any internet-connected device. Estonia's system has been replicated or studied as a model by dozens of countries, establishing internet voting as a technically and institutionally feasible option (Gibson, 2021).
+The integration of accountability mechanisms with voting systems is a more recent and less developed frontier. While campaign manifestos have long been part of electoral culture, systematic digital tracking of manifesto implementation gained academic and civic attention in the 2010s with the rise of open government initiatives and civic technology movements. Platforms such as Promise Tracker (Brazil), Manifesto Monitor (UK), and various national open government portals demonstrated the citizen demand for post-election accountability tools. However, these platforms were consistently developed independently of voting infrastructure, creating siloed systems that failed to leverage the trust and engagement built during the electoral cycle (Barrat, 2020).
+The confluence of mature e-voting technology with the growing civic technology and open government movements now presents an opportunity to develop integrated systems that address the full democratic cycle—from candidate manifesto presentation through secure voting to post-election accountability tracking. This integration represents the central innovation of the proposed system.
+2.4  Review of Related Prototypes and Systems
+2.4.1  Case 1: Kenya Integrated Election Management System (KIEMS) – IEBC
+The Kenya Integrated Election Management System (KIEMS) was deployed by Kenya's Independent Electoral and Boundaries Commission(IEBC) to modernise the country's electoral administration. The system integrates biometric voter identification—using fingerprint verification—with electronic transmission of polling station results to a central tallying centre. KIEMS was significantly expanded for the 2013, 2017, and 2022 general elections, each cycle refining the system based on operational lessons (IEBC, 2024).
+Strengths: KIEMS reduces voter impersonation through biometric verification; accelerates result transmission compared to manual processes; maintains a centralised, deduplicated voter registration database; and enhances transparency in the national tallying process.
+Weaknesses and Gaps: The system has experienced reliability challenges during peak election-day usage and has faced public trust concerns. Critically, it provides no manifesto presentation, no post-election tracking, no candidate performance monitoring, and no mechanisms for ongoing voter-candidate engagement beyond the voting event.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 1: IEBC KIEMS System Voting Process (Source: IEBC, 2024)
+Comparison of IEBC KIEMS System with Proposed System
+S/N
+	Proposed System Feature
+	IEBC KIEMS System
+	1
+	Has integrated manifesto presentation and candidate profiles
+	Lacks any manifesto presentation functionality
+	2
+	Provides a manifesto tracking dashboard for post-election monitoring
+	No post-election tracking mechanisms
+	3
+	Offers real-time accountability metrics and progress indicators
+	No accountability metrics available
+	4
+	Allows ongoing candidate-voter communication via the platform
+	Candidate information not integrated into the system
+	5
+	Employs blockchain-inspired, distributed audit trails
+	Relies on centralised database audit trails
+	Table 1: Comparison of IEBC KIEMS System with Proposed System
+2.4.2  Case 2: Estonia's National i-Voting System
+Estonia's internet voting system, operational since 2005, is widely regarded as the most mature and successful national internet voting implementation globally. Voters authenticate using their national digital identity cards or mobile ID credentials, cast encrypted votes through a secure online portal, and may revise their vote during the advance voting period. The system has been used in every national and local election since its introduction, with internet voting accounting for over 50% of votes cast in recent elections (Estonia National Electoral Committee, 2024).
+Strengths: The system delivers exceptional voter convenience and accessibility; employs strong cryptographic security through digital ID authentication; has an extensive, transparent track record spanning two decades; and supports comprehensive public auditing of the voting process.
+Weaknesses and Gaps: Candidate manifestos are hosted on entirely separate platforms, requiring voters to consult multiple sources. No post-election tracking functionality exists. 
+Figure 2: Estonia i-Voting System Architecture (Source: Estonian NEC, 2024)
+Comparison of Estonia i-Voting System with Proposed System
+S/N
+	Proposed System Feature
+	Estonia i-Voting System
+	1
+	Manifesto presentation integrated within the voting platform
+	Manifestos hosted on entirely separate, unconnected platforms
+	2
+	Provides a real-time manifesto tracking dashboard
+	No post-election tracking functionality whatsoever
+	3
+	Includes accountability metrics and performance indicators
+	Focus is exclusively on the voting event itself
+	4
+	Enables ongoing candidate performance monitoring
+	No performance monitoring mechanism
+	5
+	Includes voter feedback and engagement mechanisms
+	Very limited voter engagement beyond ballot casting
+	Table 2: Comparison of Estonia i-Voting System with Proposed System
+2.4.5  Case 5: Brazil's e-Voting System
+Brazil pioneered national e-voting with the introduction of DRE machines in 1996, a programme that has grown and matured over nearly three decades. The system now combines DRE machines with biometric voter authentication and is noted for its rapid result delivery, with national tallies typically completed within hours of polls closing. Brazil's system serves a large and geographically diverse population, demonstrating the operational resilience of well-institutionalised electronic voting (Nunes & Silva, 2024).
+Strengths: The system delivers very rapid results, enjoys high levels of voter confidence built over decades, maintains a comprehensive biometric voter registration database, and includes accessibility features for voters with disabilities.
+Weaknesses and Gaps: Brazil's system does not offer internet-based or remote voting. Candidate manifestos are not integrated into the voting platform, limiting informed voting. There are no citizen engagement mechanisms beyond ballot casting, and no systematic tracking of campaign promise fulfilment exists within the electoral infrastructure.
+Figure 5: Brazil e-Voting Terminal Interface (Source: Brazilian Superior Electoral Court)
+Comparison of Brazil e-Voting System with Proposed System
+S/N
+	Proposed System Feature
+	Brazil e-Voting System
+	1
+	Internet-based voting accessible from any browser-enabled device
+	Voting restricted to dedicated physical terminals at polling stations
+	2
+	Manifesto presentation integrated within the voting platform
+	No manifesto functionality within the voting system
+	3
+	Real-time accountability tracking dashboard for post-election
+	No post-election tracking features of any kind
+	4
+	Accessible from any location via mobile or desktop browser
+	Physical presence at polling station mandatory
+	5
+	Citizen feedback and engagement mechanisms integrated
+	Limited strictly to voting function with no engagement tools
+	Table 5: Comparison of Brazil e-Voting System with Proposed System
+2.5  Emerging Trends and Patterns
+Analysis of the five reviewed systems, combined with wider literature, reveals several important trends shaping the future of electronic voting:
+* Biometric Authentication: There is a clear and accelerating trend towards biometric voter identification—fingerprint, iris, and facial recognition—to enhance identity verification, reduce fraud, and improve voter confidence in the integrity of the electoral roll.
+* Blockchain and Distributed Ledger Technology: Growing interest in blockchain for immutable, tamper-evident vote records is evident in academic literature and pilot projects, though large-scale production deployments remain limited (Ritter & Schmitz, 2021).
+* Mobile and Internet Accessibility: Jurisdictions are increasingly exploring mobile-compatible and internet-based voting to expand accessibility and voter participation, particularly among younger and geographically dispersed populations.
+* Transparency Mechanisms: The VVPAT in India exemplifies a broader demand for voter-verifiable audit trails that allow individuals to confirm their vote was recorded correctly, addressing concerns about electronic system trustworthiness.
+* Cloud-Based Infrastructure: Cloud technologies are being adopted to improve the scalability, redundancy, and reliability of electoral systems, reducing dependence on fragile local hardware infrastructure.
+Despite these advances, a consistent and striking pattern across all reviewed systems is the near-total absence of integrated accountability mechanisms that bridge the voting event with post-election governance. No reviewed system provides manifesto presentation, promise tracking, or candidate performance monitoring within the electoral platform. This represents a significant gap between the technology's current capabilities and the full potential of digital democracy.
+2.6  Research Gap
+The foregoing literature review clearly establishes a gap in existing e-voting systems: the absence of integrated accountability mechanisms that connect the voting process with post-election candidate performance tracking. Specifically, the gap encompasses four dimensions:
+* Informed Voting Deficit: No current production e-voting system provides voters with standardised, comparable manifesto information within the voting interface, leaving voters to research candidates independently and inconsistently.
+* Post-Election Accountability Void: Existing systems end their functionality at ballot counting, with no mechanism for systematic tracking of manifesto implementation or candidate performance.
+* Candidate-Voter Communication Gap: There are no platforms within existing electoral systems that enable ongoing, structured engagement between elected officials and their constituents around the fulfilment of campaign commitments.
+* Performance Monitoring Absence: No measurable, auditable metrics for evaluating candidate performance against campaign promises are embedded within electoral system architecture.
+This gap presents a clear opportunity for innovation. The proposed integrated system addresses all four dimensions by combining secure electronic voting with a comprehensive manifesto presentation and post-election tracking module, designed within a single, coherent platform architecture.
+2.7  Chapter Summary
+This chapter has examined the historical evolution of electronic voting from punch-card systems through DRE machines to internet voting, and has analysed five operational systems: Kenya's KIEMS, Estonia's i-Voting, Sierra Leone's pilot, India's EVM, and Brazil's e-voting system. The analysis reveals that while these systems have made substantial contributions to electoral efficiency, security, and accessibility, they consistently and uniformly lack integrated accountability mechanisms connecting the voting event to post-election governance. The identified research gap—centred on the absence of manifesto presentation, tracking, and accountability features—provides the foundational justification for the proposed integrated system. Chapter Three will now outline the methodological approach to be employed in its development.
+
+
+
+CHAPTER THREE: METHODOLOGY
+3.1  Introduction
+This chapter describes the methodology to be employed throughout the development lifecycle of the e-voting system with integrated manifesto tracking. The development process is structured around the Structured Systems Analysis and Design Methodology (SSADM), selected for its rigorous, phase-by-phase approach that is well-suited to systems with complex security, data integrity, and multi-stakeholder requirements. SSADM's emphasis on thorough requirements analysis, formal modelling of data and process flows, and documented deliverables at each phase provides a strong quality assurance framework appropriate for an electoral system where accuracy and trustworthiness are paramount.
+The chapter is organised to address each key phase of the development lifecycle: requirement elicitation, system analysis, system design, implementation, testing, and deployment. Each section identifies the tools, techniques, and rationale for the methodological choices made.
+3.2  Methodology of Requirement Elicitation
+Requirement elicitation will be conducted using a mixed-methods approach combining qualitative and quantitative data collection to ensure a comprehensive and representative understanding of stakeholder needs, expectations, and constraints.
+3.2.1  Interviews
+Semi-structured interviews will be conducted with key stakeholders including student leaders and candidates, university electoral commission officials, IT administrators responsible for university systems, and a purposive sample of 30 student voters. Semi-structured interviews are chosen for their flexibility in allowing follow-up probing on unexpected issues while maintaining thematic consistency across participants (Creswell & Creswell, 2018). Interviews will be audio-recorded with participants' consent and transcribed for thematic analysis.
+3.2.2  Questionnaires
+Structured questionnaires will be distributed to a sample of 200 students selected using stratified random sampling across faculties and year groups to ensure representativeness. The questionnaire will employ Likert scales, multiple-choice questions, and targeted open-ended items to gather both quantitative preference data and qualitative insights. The instrument is provided in Appendix A. Quantitative data will be analysed using descriptive statistics (frequencies, means, percentages), while open-ended responses will be subjected to thematic analysis.
+3.2.3  Document Analysis
+Existing CUEA electoral regulations, student government guidelines, past election reports, and relevant national electoral legislation will be reviewed to identify procedural requirements, compliance constraints, and systemic boundaries that the new system must respect.
+3.3  Methodology for System Analysis
+System analysis will be conducted using SSADM tools and techniques, producing formal models that serve as the basis for system design. The following analytical artefacts will be developed:
+System Workflow Diagram: A high-level process flow illustrating the overall sequence of system operations from user registration through voting to post-election tracking.
+
+
+* Context Diagram: A level-0 Data Flow Diagram (DFD) defining system boundaries and all external entities—voters, candidates, administrators, and the electoral commission—that interact with the system.
+
+
+  
+
+	
+
+
+
+Figure 6: Context Diagram Notation (SSADM) – System Boundaries and External Entities
+* Data Flow Diagrams (DFD): Level-1 and Level-2 DFDs decompose system processes to show the flow of data between processes, external entities, and persistent data stores, providing a detailed map of system functionality.
+
+
+  
+ 
+	
+
+  
+ 
+	
+
+
+
+
+
+* Data Dictionary: A comprehensive repository documenting all data elements, including their names, definitions, data types, lengths, validation rules, and relationships, ensuring consistency throughout development.
+* Database Normalisation: Entity data will be normalised through First, Second, and Third Normal Forms (1NF–3NF) to eliminate data redundancy, prevent update anomalies, and ensure data integrity.
+3.4  Methodology for System Design
+System design will translate the analytical models into concrete architectural and interface specifications:
+3.4.1  User Interface Design
+Prototype wireframes and high-fidelity mockups will be developed using Figma. Design will adhere to WCAG 2.1 accessibility guidelines, employ responsive layouts for desktop and mobile devices
+3.4.2  Database Design
+Entity Relationship Diagrams (ERDs) will model the database structure, capturing all entities, attributes, primary keys, foreign keys, and cardinality relationships. The database will be normalised to 3NF.
+  
+
+	
+
+
+
+Figure 7: Entity Relationship Diagram Notation – Database Structure
+3.4.3  System Architecture
+The system will employ a three-tier architecture: 
+3.4.4  Security Design
+Security architecture will include: role-based access control (RBAC) with three roles (Voter, Candidate, Administrator); AES-256 encryption for sensitive data at rest and in transit; JSON Web Token (JWT) stateless authentication; bcrypt password hashing; parameterised database queries to prevent SQL injection; Content Security Policy headers to prevent cross-site scripting; rate limiting to mitigate denial-of-service attacks; and comprehensive audit logging for all critical system operations.
+3.5  Methodology for System Implementation
+Implementation will be conducted following the structured, sequential plan established during the System Design phase of SSADM. The process will be executed in a methodical, controlled manner to ensure that all documented functional and non-functional requirements are met before proceeding to the testing phase.
+
+
+Technology Stack:
+- Frontend: React Js and CSS for structuring and styling the user interface, with JavaScript for client-side interactivity
+- Backend: Python using the Django framework for robust application development, security, and Object-Relational Mapping (ORM) integration
+- Database: PostgreSQL RDBMS for reliable data storage and management
+- Version Control: Git with GitHub for collaborative version management, code review, and change tracking
+- Development Tools: Visual Studio Code IDE, Postman for API testing, and browser developer tools for debugging
+
+
+- Django best practices will be followed for project structure, security configurations, and ORM usage
+- Code documentation will follow established conventions for maintainability
+- Regular code reviews will ensure quality and consistency across the development team
+3.6  Methodology for System Testing
+A multi-level testing strategy will be employed to validate both functional and non-functional requirements:
+* Unit Testing: Jest will be used to test individual components and functions in isolation, ensuring each module behaves correctly under normal and boundary conditions.
+* Integration Testing: Supertest will verify correct interaction between API endpoints and the PostgreSQL database, including data flow, error handling, and authentication middleware.
+* System Testing: Cypress will provide end-to-end automated testing of complete user workflows—voter registration, authentication, manifesto viewing, ballot casting, and manifesto tracking—across different browsers and devices.
+* Security Testing: OWASP ZAP (Zed Attack Proxy) will be used for automated penetration testing to identify common vulnerabilities including SQL injection, XSS, CSRF, and authentication weaknesses.
+* User Acceptance Testing (UAT): A structured UAT session with 30 student participants will evaluate system usability, task completion rates, and user satisfaction using standardised usability metrics (System Usability Scale).
+All testing activities will be documented in a formal test plan specifying test cases, expected outcomes, acceptance criteria, and bug tracking procedures.
+3.7  Methodology for System Deployment
+A phased deployment strategy will minimise risk and allow iterative refinement:
+* Phase 1 – Controlled Pilot: Initial deployment within a single faculty to gather real-world operational data and user feedback before broader rollout.
+* Phase 2 – Full University Deployment: Expansion to all faculties following evaluation and incorporation of lessons from the pilot phase.
+User training will comprise: a two-day administrator training programme on system management and audit functions; a one-day candidate training on manifesto upload, profile management, and post-election reporting; and self-service online tutorials and user guides for student voters. Post-deployment support will include a help desk, bug tracking system, automated daily backups, and ongoing performance monitoring.
+
+
+
+CHAPTER FOUR: SCHEDULE, RESOURCES AND BUDGET
+4.1  Introduction
+This chapter presents the project schedule, required resources, and estimated budget for the development of the e-voting system with integrated manifesto tracking. The schedule provides a structured timeline across all project phases, while the resources and budget sections quantify the human, equipment, software, and financial requirements necessary for successful and timely project completion.
+4.2  Project Schedule
+The project will be completed over sixteen weeks (approximately four months), divided into eight two-week periods. The schedule below presents major activities and their planned durations. Documentation is treated as a continuous activity throughout all phases.
+
+
+Activity / Phase
+	Wk 1-2
+	Wk 3-4
+	Wk 5-6
+	Wk 7-8
+	Wk 9-10
+	Wk 11-12
+	Wk 13-14
+	Wk 15-16
+	Requirement Elicitation
+	█
+	█
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	System Analysis
+	
+
+	█
+	█
+	
+
+	
+
+	
+
+	
+
+	
+
+	System Design
+	
+
+	
+
+	█
+	█
+	
+
+	
+
+	
+
+	
+
+	Backend Implementation
+	
+
+	
+
+	
+
+	█
+	█
+	█
+	
+
+	
+
+	Frontend Implementation
+	
+
+	
+
+	
+
+	
+
+	█
+	█
+	█
+	
+
+	Database Implementation
+	
+
+	
+
+	
+
+	█
+	█
+	
+
+	
+
+	
+
+	Unit & Integration Testing
+	
+
+	
+
+	
+
+	
+
+	
+
+	█
+	█
+	
+
+	User Acceptance Testing
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	█
+	
+
+	Deployment
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	█
+	Documentation (Continuous)
+	█
+	█
+	█
+	█
+	█
+	█
+	█
+	█
+	Table 6: Project Schedule (Gantt Chart)
+4.3  Project Resources
+The following resources are required for successful project execution:
+
+
+Resource Category
+	Item
+	Quantity
+	Specifications / Qualifications
+	Human Resources
+	Project Lead / Developer
+	1
+	BSc Computer Science; full-stack development experience
+	
+
+	User Trainers
+	2
+	Experience in IT training sessions
+	Equipment
+	Development Laptop
+	1
+	Intel Core i7; 16 GB RAM; 512 GB SSD
+	
+
+	Testing Laptop
+	1
+	Intel Core i5; 8 GB RAM; 256 GB SSD
+	Software
+	Development Tools
+	—
+	VS Code, Postman, Git (free/open source)
+	
+
+	Database
+	—
+	PostgreSQL (open source)
+	
+
+	Design Tools
+	—
+	Figma (free tier)
+	
+
+	Testing Tools
+	—
+	Jest, Cypress, OWASP ZAP
+	Office Supplies
+	Stationery
+	—
+	Notebooks, pens, printing paper, toner
+	
+
+	Storage Media
+	2
+	External hard drive, 2 TB (backups)
+	Table 7: Project Resources
+4.4  Project Budget
+The estimated budget for the project is presented below. All costs are in Kenya Shillings (KES). Where open-source or free-tier software is used, the cost is recorded as zero. A 10% contingency provision is included to account for unforeseen expenditures.
+
+
+Item / Description
+	Qty / Period
+	Unit Cost (KES)
+	Total (KES)
+	Notes
+	Human Resources
+	
+
+	
+
+	
+
+	
+
+	Project Developer – Honorarium
+	4 months
+	5,000
+	20,000
+	Student stipend
+	User Trainers
+	200 × 20 hrs
+	500
+	20,000
+	Training sessions
+	Equipment
+	
+
+	
+
+	
+
+	
+
+	Development Laptop
+	1
+	60,000
+	60,000
+	Intel i7, 16 GB RAM
+	Testing Laptop
+	1
+	40,000
+	40,000
+	Intel i5, 8 GB RAM
+	Network Equipment
+	1 set
+	15,000
+	15,000
+	Router + switches
+	External Hard Drives
+	2
+	7,000
+	14,000
+	2 TB each
+	Software & Services
+	
+
+	
+
+	
+
+	
+
+	Domain Name (.ke)
+	1 year
+	1,500
+	1,500
+	
+
+	Cloud Hosting – Staging
+	2 months
+	0
+	0
+	AWS/Azure free tier
+	SSL Certificate
+	1 year
+	3,000
+	3,000
+	HTTPS security
+	Office Supplies
+	
+
+	
+
+	
+
+	
+
+	Stationery
+	1 set
+	5,000
+	5,000
+	Paper, pens, notebooks
+	Printing & Binding
+	5 copies
+	1,500
+	7,500
+	Final reports
+	Miscellaneous
+	
+
+	
+
+	
+
+	
+
+	Transport
+	4 months
+	2,500
+	10,000
+	Field visits & meetings
+	
+
+	
+
+	
+
+	
+
+	
+
+	Communication
+	4 months
+	2,500
+	10,000
+	Internet + phone credit
+	Sub-total
+	
+
+	
+
+	312,000
+	
+
+	Contingency (10%)
+	
+
+	
+
+	31,200
+	Risk buffer
+	TOTAL
+	
+
+	
+
+	150,200
+	
+
+	Table 8: Project Budget
+4.5  Chapter Summary
+This chapter has detailed the project schedule, required resources, and budget for the development of the e-voting system with integrated manifesto tracking. The project will be completed in sixteen weeks across eight two-week phases, from requirement elicitation through to deployment and final documentation. Required resources encompass human resources (project developer, supervisor, IT support specialist, and user trainers), physical equipment (development and testing laptops, server hardware, biometric scanners, and networking equipment), software tools (predominantly open-source or freely available), and office and logistical supplies.
+
+
+
+REFERENCES
+Alvarez, R. M., & Hall, T. E. (2015). Electronic elections: The perils and promises of digital democracy. Princeton University Press.
+Barrat, J. (2020). E-voting and electoral integrity: A comparative analysis. Electoral Studies, 65, 102–115. https://doi.org/10.1016/j.electstud.2020.102115
+Catholic University of Eastern Africa. (2025). Student elections guidelines and regulations. CUEA Press.
+Creswell, J. W., & Creswell, J. D. (2018). Research design: Qualitative, quantitative, and mixed methods approaches (5th ed.). SAGE Publications.
+Estonia National Electoral Committee. (2024). Internet voting in Estonia: 2023 parliamentary elections report. Tallinn: NEC.
+Gibson, R. K. (2021). Internet voting and democratic engagement: Lessons from Estonia. Journal of Information Technology & Politics, 18(3), 245–260. https://doi.org/10.1080/19331681.2021.1895056
+Independent Electoral and Boundaries Commission. (2024). Kenya integrated election management system: Post-election evaluation report. Nairobi: IEBC.
+International Foundation for Electoral Systems. (2023). E-voting in Africa: Challenges and opportunities. IFES Publications.
+Kumar, A., & Sharma, S. (2022). Electronic voting machines in India: Security and transparency considerations. International Journal of Electronic Governance, 14(2), 156–172.
+Madise, Ü., & Vinkel, P. (2020). Internet voting in Estonia: From constitutional debate to evaluation of experience. In M. A. Smith & P. C. Smith (Eds.), Electronic voting (pp. 45–68). Springer.
+Mwalili, J., & Omondi, R. (2023). Challenges of e-voting implementation in developing countries: The Kenyan experience. East African Journal of Information Technology, 6(1), 22–35.
+Nunes, C., & Silva, A. (2024). Brazil's electronic voting system: 25 years of evolution. Revista Brasileira de Informática na Educação, 32(1), 78–95.
+Presser, S., & Schuman, H. (2022). Survey research methodology. In R. J. Rossi & J. D. Wright (Eds.), Handbook of survey research (pp. 112–135). Academic Press.
+Ritter, S., & Schmitz, P. (2021). Blockchain for voting: Hype or reality? IEEE Security & Privacy, 19(4), 62–70. https://doi.org/10.1109/MSEC.2021.3069454
+Sierra Leone Electoral Commission. (2023). E-voting pilot project evaluation report. Freetown: SLEC.
+Singh, P., & Chakraborty, A. (2023). Voter-verified paper audit trail in Indian elections: Implementation and challenges. Election Law Journal, 22(3), 234–248.
+United Nations Development Programme. (2024). Technology and elections: A guide for electoral management bodies. UNDP Publications.
+Vinkel, P. (2022). Internet voting in Estonia: A critical analysis. Journal of Baltic Studies, 53(2), 189–204.
+
+
+APPENDICES
+Appendix A: Fact-Finding Instruments
+A.1  Questionnaire for Student Voters
+EVoting System with Manifesto Tracking – Requirements Survey
+Dear Respondent,
+You are invited to participate in a research study aimed at understanding the requirements for an electronic voting system with integrated candidate manifesto tracking at the Catholic University of Eastern Africa. Your responses will directly inform the design of a system intended to improve your voting experience and strengthen candidate accountability. Participation is entirely voluntary, and all responses will be treated with strict confidentiality. The questionnaire takes approximately 10–15 minutes to complete.
+Thank you in advance for your valuable input.
+
+
+SECTION A: DEMOGRAPHIC INFORMATION
+1. Age: _______ years
+2. Gender:    Male  [ ]      Female  [ ]      Prefer not to say  [ ]
+3. Year of Study:    1st Year  [ ]   2nd Year  [ ]   3rd Year  [ ]   4th Year  [ ]   Postgraduate  [ ]
+4. Faculty: _______________________________
+
+
+SECTION B: CURRENT VOTING EXPERIENCE
+5. Have you participated in student government elections at CUEA?    Yes  [ ]      No  [ ]
+6. Rate your overall satisfaction with the current (manual) voting process:
+    (1 = Very Dissatisfied     2 = Dissatisfied     3 = Neutral     4 = Satisfied     5 = Very Satisfied)
+    1  [ ]     2  [ ]     3  [ ]     4  [ ]     5  [ ]
+7. What challenges have you experienced in previous elections? (Tick all that apply):
+    Long queues at voting points  [ ]
+    Difficulty identifying candidates  [ ]
+    Insufficient candidate information  [ ]
+    Privacy and secrecy concerns  [ ]
+    Logistical errors or delays  [ ]
+    Other (specify): _______________________________  [ ]
+
+
+SECTION C: CANDIDATE ACCOUNTABILITY
+8. Do you believe elected student leaders generally fulfil their campaign promises?
+    Always  [ ]
+    Often  [ ]
+    Sometimes  [ ]
+    Rarely  [ ]
+    Never  [ ]
+9. Would you like a platform to track whether elected leaders are fulfilling their promises?
+    
+    Yes  [ ]      No  [ ]      Not sure  [ ]
+10. How important is manifesto tracking for holding leaders accountable?
+    (1 = Not at all important     5 = Extremely important)
+    1  [ ]     2  [ ]     3  [ ]     4  [ ]     5  [ ]
+
+
+SECTION D: E-VOTING SYSTEM PREFERENCES
+11. Would you be willing to vote electronically if the system was available?
+    Yes  [ ]      No  [ ]      Not sure  [ ]
+12. Which voter authentication method would you most trust? (Select one):
+    Username and password  [ ]
+    Biometric fingerprint scan  [ ]
+    SMS / one-time password (OTP)  [ ]
+    University ID card verification  [ ]
+13. Which features would you want in an e-voting system? (Tick all that apply):
+    View candidate manifestos before voting  [ ]
+    Compare candidates side-by-side on a single screen  [ ]
+    Track manifesto implementation progress after elections  [ ]
+    Receive automatic election reminders and notifications  [ ]
+    View live or near-real-time election results  [ ]
+    Submit feedback on elected leaders' performance  [ ]
+    Other (specify): _______________________________  [ ]
+
+
+SECTION E: OPEN-ENDED RESPONSES
+14. What concerns, if any, do you have about electronic voting?
+________________________________________________________________________________
+________________________________________________________________________________
+15. What additional features or safeguards would make you more confident in using an e-voting system?
+________________________________________________________________________________
+________________________________________________________________________________
+
+
+Thank you for taking the time to complete this survey. Your responses will contribute directly to the design of a better electoral system for CUEA students.
+
+
+A.2  Interview Guide for Candidates and Electoral Officials
+The following questions will guide semi-structured interviews. Probing follow-up questions will be used as appropriate.
+* What is your specific role in the student electoral process, and for how long have you held it?
+* What are the most significant challenges or weaknesses you have observed in the current manual voting procedures?
+* How do candidates currently communicate their manifestos and policy commitments to student voters?
+* What accountability mechanisms, if any, currently exist to ensure elected student leaders fulfil their campaign promises?
+* How should the system handle disputes, challenges, or suspected irregularities in the voting process?
+* What level and type of training do you believe different user groups (voters, candidates, administrators) would require?
+* Do you have any additional suggestions or requirements for the proposed system that have not been covered?
+
+
+
+Appendix B: Reviewed Cases – Screenshots
+Note: The following section provides placeholder references for screenshots of each reviewed system. Full screenshots will be inserted in the final submitted document.
+
+
+B.1  IEBC KIEMS System Screenshots
+Screenshots to be included: (i) KIEMS voter verification interface at polling station; (ii) results transmission dashboard; (iii) central tallying centre display demonstrating absence of manifesto presentation features.
+B.2  Estonia i-Voting System Screenshots
+Screenshots to be included: (i) voter authentication portal with digital ID login; (ii) online ballot casting interface; (iii) separate candidate information websites demonstrating the lack of integration.
+B.5  Brazil e-Voting Terminal Screenshots
+Screenshots to be included: (i) DRE voting terminal interface; (ii) biometric fingerprint authentication screen; (iii) results display system from Superior Electoral Court, demonstrating absence of manifesto features.
+
+
+
+Appendix C: Technology Stack Justification
+Table C.1: Technology Stack Justification
+
+
+Technology
+	Justification
+	PostgreSQL
+	Provides full ACID compliance critical for transactional data integrity in voting operations; robust built-in security features; support for complex queries and JSON data; and proven scalability for institutional-scale deployments.
+	JSON Web Tokens (JWT)
+	Enables stateless, scalable authentication suitable for distributed or cloud-hosted systems, without server-side session storage requirements. Industry-standard security with configurable token expiry.
+	bcrypt
+	Industry-standard adaptive password hashing algorithm with built-in salting to prevent rainbow table attacks. Work factor can be increased over time as hardware improves.
+	Tailwind CSS
+	Utility-first CSS framework enabling rapid, consistent responsive design without custom CSS overhead. Excellent mobile compatibility aligns with the goal of broad device accessibility.
+	
+
+Appendix D: Security Threat Mitigation Matrix
+— END OF PROPOSAL —
+Page  | Evoting Accountability

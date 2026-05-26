@@ -1,0 +1,231 @@
+{% extends "core/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-20">Dashboard</h2>
+
+{% comment %}
+╔══════════════════════════════════════════════════════════════╗
+║  ADMIN DASHBOARD                                           ║
+║  Shows: system stats, election history, voter turnout      ║
+╚══════════════════════════════════════════════════════════════╝
+{% endcomment %}
+{% if section == 'admin' %}
+    <!-- Big stat cards showing system-wide numbers -->
+    <div class="grid">
+        <div class="card stat-card">
+            <div class="number">{{ total_voters }}</div>
+            <div class="label">Registered Voters</div>
+        </div>
+        <div class="card stat-card">
+            <div class="number">{{ total_candidates }}</div>
+            <div class="label">Approved Candidates</div>
+        </div>
+        <div class="card stat-card">
+            <div class="number">{{ total_votes }}</div>
+            <div class="label">Total Votes Cast</div>
+        </div>
+        <div class="card stat-card">
+            <div class="number">{{ pending_candidates }}</div>
+            <div class="label">Pending Approvals</div>
+        </div>
+        <div class="card stat-card">
+            <div class="number">{{ total_manifestos }}</div>
+            <div class="label">Total Manifestos</div>
+        </div>
+        <div class="card stat-card">
+            <div class="number">{{ total_updates }}</div>
+            <div class="label">Tracking Updates</div>
+        </div>
+    </div>
+
+    <!-- Admin action buttons -->
+    <div class="flex flex-wrap" style="gap: 10px; margin-top: 10px;">
+        <a href="{% url 'admin_elections' %}" class="btn">Manage Elections</a>
+        <a href="{% url 'admin_candidates' %}" class="btn">Manage Candidates</a>
+        <a href="{% url 'admin_audit_logs' %}" class="btn">Audit Logs</a>
+        <a href="{% url 'results' %}" class="btn btn-outline">View Results</a>
+        <a href="{% url 'manifesto_tracking' %}" class="btn btn-outline">Tracking Dashboard</a>
+    </div>
+
+    {% comment %}
+    Election History Table — shows every election with stats
+    {% endcomment %}
+    {% if election_stats %}
+        <div class="card mt-20">
+            <h3>Election History & Stats</h3>
+            <table>
+                <tr>
+                    <th>Election</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                    <th>Candidates</th>
+                    <th>Votes Cast</th>
+                    <th>Manifestos</th>
+                </tr>
+                {% for es in election_stats %}
+                    <tr>
+                        <td><strong>{{ es.election.title|truncatewords:8 }}</strong></td>
+                        <td style="font-size:0.8rem;">{{ es.election.start_date|date:"M d, Y" }} - {{ es.election.end_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if es.election.is_active and es.election.end_date >= now %}
+                                <span class="badge badge-success">Active</span>
+                            {% elif es.election.end_date < now %}
+                                <span class="badge badge-info">Past</span>
+                            {% else %}
+                                <span class="badge badge-warning">Upcoming</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ es.candidates }}</td>
+                        <td class="text-center">{{ es.votes }}</td>
+                        <td class="text-center">{{ es.manifestos }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+
+    {% comment %}
+    Active Elections section — quick links to manage positions
+    {% endcomment %}
+    {% if active_elections %}
+        <div class="card">
+            <h3>Active Elections</h3>
+            {% for e in active_elections %}
+                <div style="border:1px solid #eee; padding:15px; border-radius:6px; margin-bottom:10px;">
+                    <div class="flex justify-between">
+                        <div>
+                            <strong>{{ e.title }}</strong><br>
+                            <small>{{ e.start_date|date:"M d, Y H:i" }} - {{ e.end_date|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <a href="{% url 'admin_positions' e.id %}" class="btn btn-sm">Manage Positions</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+{% comment %}
+╔══════════════════════════════════════════════════════════════╗
+║  CANDIDATE DASHBOARD                                       ║
+║  Shows: their profile, manifestos with latest status        ║
+╚══════════════════════════════════════════════════════════════╝
+{% endcomment %}
+{% elif section == 'candidate' %}
+    <!-- Candidate profile card with approval status badge -->
+    <div class="card">
+        <div class="flex justify-between">
+            <h3>My Candidate Profile</h3>
+            <span class="badge {% if candidate.is_approved %}badge-success{% else %}badge-warning{% endif %}">
+                {{ candidate.is_approved|yesno:"Approved,Pending Approval" }}
+            </span>
+        </div>
+        <p><strong>Position:</strong> {{ candidate.position }}</p>
+        <p><strong>Election:</strong> {{ candidate.election }}</p>
+        <p><strong>Bio:</strong> {{ candidate.bio|default:"No bio yet" }}</p>
+    </div>
+
+    <!-- Manifesto list with latest status and action buttons -->
+    <div class="card">
+        <div class="flex justify-between mb-10">
+            <h3>My Manifestos ({{ manifestos|length }})</h3>
+            <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
+        </div>
+        {% if manifestos %}
+            <table>
+                <tr><th>Title</th><th>Category</th><th>Latest Status</th><th>Actions</th></tr>
+                {% for m in manifestos %}
+                    {% with latest=m.updates.first %}
+                    <tr>
+                        <td>{{ m.title }}</td>
+                        <td>{{ m.get_category_display }}</td>
+                        <td>
+                            {% if latest %}
+                                <span class="badge 
+                                    {% if latest.status == 'completed' %}badge-success
+                                    {% elif latest.status == 'in_progress' %}badge-info
+                                    {% elif latest.status == 'delayed' %}badge-danger
+                                    {% else %}badge-warning{% endif %}">
+                                    {{ latest.get_status_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-warning">No updates</span>
+                            {% endif %}
+                        </td>
+                        <td class="flex" style="gap:5px">
+                            <a href="{% url 'manifesto_edit' m.id %}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a>
+                            <a href="{% url 'manifesto_delete' m.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this manifesto?')">Delete</a>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No manifestos yet. <a href="{% url 'manifesto_create' %}">Create your first manifesto item.</a></p>
+        {% endif %}
+    </div>
+
+{% comment %}
+╔══════════════════════════════════════════════════════════════╗
+║  VOTER DASHBOARD                                           ║
+║  Shows: active elections to vote in, past voting history    ║
+╚══════════════════════════════════════════════════════════════╝
+{% endcomment %}
+{% else %}
+    <!-- Active elections the voter can participate in -->
+    {% if active_elections %}
+        <div class="card">
+            <h3>Active Elections</h3>
+            {% for election in active_elections %}
+                <div class="card" style="box-shadow: none; border: 1px solid #eee; margin-bottom: 10px;">
+                    <div class="flex justify-between">
+                        <div>
+                            <h4>{{ election.title }}</h4>
+                            <p style="color:#666;font-size:0.85rem;">{{ election.description|truncatewords:20 }}</p>
+                            <p style="font-size:0.85rem;"><strong>Ends:</strong> {{ election.end_date|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <a href="{% url 'vote' election.id %}" class="btn btn-success">Cast Your Vote</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <h3>No Active Elections</h3>
+            <p>There are no active elections at this time. Check back later or view past results.</p>
+        </div>
+    {% endif %}
+
+    <!-- Past elections the voter participated in -->
+    {% if past_elections %}
+        <div class="card">
+            <h3>My Voting History ({{ voted_election_ids|length }} elections participated)</h3>
+            {% for e in past_elections %}
+                <div style="border:1px solid #eee; padding:12px; border-radius:6px; margin-bottom:8px;">
+                    <div class="flex justify-between">
+                        <div>
+                            <strong>{{ e.title }}</strong><br>
+                            <small style="color:#666;">{{ e.start_date|date:"M Y" }} - {{ e.end_date|date:"M Y" }}</small>
+                        </div>
+                        <div>
+                            {% if e.id in voted_election_ids %}
+                                <span class="badge badge-success">Voted</span>
+                            {% else %}
+                                <span class="badge badge-warning">Did not vote</span>
+                            {% endif %}
+                            <a href="{% url 'results_detail' e.id %}" class="btn btn-sm">Results</a>
+                            <a href="{% url 'manifesto_tracking_detail' e.id %}" class="btn btn-sm">Tracking</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Quick links -->
+    <div class="flex flex-wrap" style="gap: 10px;">
+        <a href="{% url 'results' %}" class="btn btn-outline">View All Results</a>
+        <a href="{% url 'manifesto_tracking' %}" class="btn btn-outline">Manifesto Tracking</a>
+    </div>
+{% endif %}
+{% endblock %}

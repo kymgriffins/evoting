@@ -1,0 +1,41 @@
+{% extends "core/base.html" %}
+{% block title %}Manage Elections{% endblock %}
+{% block content %}
+<h2 class="mb-20">Manage Elections</h2>
+
+<div class="card">
+    <h3>{% if editing %}Edit Election{% else %}Create New Election{% endif %}</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">{% if editing %}Update{% else %}Create{% endif %} Election</button>
+        {% if editing %}<a href="{% url 'admin_elections' %}" class="btn btn-outline">Cancel</a>{% endif %}
+    </form>
+</div>
+
+<div class="card">
+    <h3>All Elections</h3>
+    <table>
+        <tr><th>Title</th><th>Active</th><th>Start</th><th>End</th><th>Actions</th></tr>
+        {% for e in elections %}
+            <tr>
+                <td>{{ e.title }}</td>
+                <td>{% if e.is_active %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-warning">No</span>{% endif %}</td>
+                <td>{{ e.start_date|date:"M d, Y H:i" }}</td>
+                <td>{{ e.end_date|date:"M d, Y H:i" }}</td>
+                <td class="flex" style="gap:5px">
+                    <a href="{% url 'admin_positions' e.id %}" class="btn btn-sm">Positions</a>
+                    <a href="{% url 'admin_election_edit' e.id %}" class="btn btn-sm btn-warning">Edit</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" style="color:#999;">No elections yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+<style>
+    form p { margin-bottom: 15px; }
+    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+    form p input, form p select, form p textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+</style>
+{% endblock %}

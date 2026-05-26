@@ -1,0 +1,130 @@
+{% extends "core/base.html" %}
+{% block title %}Leaderboard - Candidate Performance{% endblock %}
+{% block content %}
+
+{% comment %}
+╔══════════════════════════════════════════════════════════════╗
+║  LEADERBOARD PAGE                                           ║
+║  Public page — no login required.                           ║
+║  Shows all candidates ranked by:                            ║
+║    1. Success rate (% of promises completed)                ║
+║    2. Average star rating                                   ║
+║  Top 3 get medals 🥇🥈🥉                                    ║
+╚══════════════════════════════════════════════════════════════╝
+{% endcomment %}
+
+<div class="card">
+    <h3>Candidate Performance Leaderboard</h3>
+    <p class="mb-20" style="color:#666;">Ranked by manifesto success rate (completed promises / total promises). Voters can rate and comment on each manifesto.</p>
+
+    {% if ranking %}
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Candidate</th>
+                <th>School</th>
+                <th>Position</th>
+                <th>Election</th>
+                <th>Success Rate</th>
+                <th>Avg Rating</th>
+                <th>Ratings</th>
+                <th>Votes</th>
+                <th>Details</th>
+            </tr>
+            {% for r in ranking %}
+                <tr style="{% if r.rank == 1 %}background: #fff9c4;{% elif r.rank == 2 %}background: #f5f5f5;{% elif r.rank == 3 %}background: #fff3e0;{% endif %}">
+                    <td style="font-size:1.2rem; font-weight: bold; text-align: center;">
+                        {% if r.rank == 1 %}🥇{% elif r.rank == 2 %}🥈{% elif r.rank == 3 %}🥉{% else %}{{ r.rank }}{% endif %}
+                    </td>
+                    <td><strong>{{ r.candidate.user.get_full_name|default:r.candidate.user.username }}</strong></td>
+                    <td>{{ r.candidate.user.student_id|default:"-"|slice:":4" }}</td>
+                    <td>{{ r.candidate.position.title }}</td>
+                    <td style="font-size:0.8rem;">{{ r.candidate.election.title|truncatewords:5 }}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:bold; 
+                                {% if r.success_rate >= 70 %}color:#27ae60;
+                                {% elif r.success_rate >= 40 %}color:#f39c12;
+                                {% else %}color:#e74c3c;{% endif %}">
+                                {{ r.success_rate }}%
+                            </span>
+                            <div style="background:#eee; width:60px; height:8px; border-radius:4px; overflow:hidden;">
+                                <div style="height:100%; width:{{ r.success_rate }}%; 
+                                    {% if r.success_rate >= 70 %}background:#27ae60;
+                                    {% elif r.success_rate >= 40 %}background:#f39c12;
+                                    {% else %}background:#e74c3c;{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="text-align:center;">
+                        {% if r.avg_rating > 0 %}
+                            <span style="font-size:1.1rem;">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= r.avg_rating %}⭐{% endif %}
+                                {% endfor %}
+                            </span>
+                            <br><small>{{ r.avg_rating }}/5</small>
+                        {% else %}
+                            <small style="color:#999;">No ratings</small>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center;">{{ r.rating_count }}</td>
+                    <td style="text-align:center;">{{ r.total_votes }}</td>
+                    <td>
+                        <a href="{% url 'manifesto_tracking_detail' r.candidate.election.id %}" class="btn btn-sm">View Manifestos</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <div class="mt-20" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:15px;">
+            {% for r in ranking|slice:":5" %}
+                <div class="card" style="text-align:center; padding:20px;">
+                    <div style="font-size:2rem; margin-bottom:5px;">
+                        {% if r.rank == 1 %}🏆{% elif r.rank == 2 %}🥈{% elif r.rank == 3 %}🥉{% elif r.rank == 4 %}4️⃣{% else %}5️⃣{% endif %}
+                    </div>
+                    <h4>{{ r.candidate.user.get_full_name|default:r.candidate.user.username }}</h4>
+                    <p style="color:#666; font-size:0.85rem;">{{ r.candidate.position.title }}</p>
+                    <div style="font-size:1.5rem; font-weight:bold; color:#16213e; margin:10px 0;">{{ r.success_rate }}%</div>
+                    <div style="background:#eee; height:10px; border-radius:5px; overflow:hidden;">
+                        <div style="height:100%; width:{{ r.success_rate }}%; background: linear-gradient(90deg, #27ae60, #2ecc71);"></div>
+                    </div>
+                    <p style="margin-top:8px; font-size:0.85rem;">
+                        {{ r.completed_manifestos }}/{{ r.total_manifestos }} promises fulfilled
+                        {% if r.avg_rating > 0 %} · ⭐ {{ r.avg_rating }}/5 ({{ r.rating_count }} ratings){% endif %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No candidates with manifestos yet.</p>
+    {% endif %}
+</div>
+
+<div class="card mt-20">
+    <h3>How It Works</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-top:15px;">
+        <div style="text-align:center; padding:15px;">
+            <div style="font-size:2rem;">📋</div>
+            <h4>Manifestos</h4>
+            <p style="font-size:0.85rem; color:#666;">Candidates upload their campaign promises organized by category.</p>
+        </div>
+        <div style="text-align:center; padding:15px;">
+            <div style="font-size:2rem;">✅</div>
+            <h4>Tracking Updates</h4>
+            <p style="font-size:0.85rem; color:#666;">Elected officials post progress updates: Not Started, In Progress, Completed, Delayed.</p>
+        </div>
+        <div style="text-align:center; padding:15px;">
+            <div style="font-size:2rem;">⭐</div>
+            <h4>Voter Ratings</h4>
+            <p style="font-size:0.85rem; color:#666;">Students rate each manifesto 1-5 stars and leave comments on progress.</p>
+        </div>
+        <div style="text-align:center; padding:15px;">
+            <div style="font-size:2rem;">📊</div>
+            <h4>Leaderboard</h4>
+            <p style="font-size:0.85rem; color:#666;">Ranked by success rate — the percentage of promises fulfilled.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

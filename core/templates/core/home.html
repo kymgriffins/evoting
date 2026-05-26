@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block title %}Home - EVoting System{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>EVoting System with Manifesto Tracking</h1>
+    <p>A secure platform for electronic voting with integrated candidate manifesto tracking to enhance accountability and transparency in electoral processes.</p>
+    {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn">Go to Dashboard</a>
+        <a href="{% url 'results' %}" class="btn btn-outline">View Results</a>
+    {% else %}
+        <a href="{% url 'register' %}" class="btn">Get Started</a>
+        <a href="{% url 'login' %}" class="btn btn-outline">Login</a>
+    {% endif %}
+</div>
+
+{% if elections %}
+    <h2 class="mb-20">Active Elections</h2>
+    <div class="grid">
+        {% for election in elections %}
+            <div class="card">
+                <h3>{{ election.title }}</h3>
+                <p>{{ election.description|truncatewords:30 }}</p>
+                <p class="mt-10"><strong>Ends:</strong> {{ election.end_date|date:"M d, Y H:i" }}</p>
+                {% if user.is_authenticated and user.role == 'voter' %}
+                    <a href="{% url 'vote' election.id %}" class="btn btn-sm mt-10">Vote Now</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card text-center">
+        <p>No active elections at the moment.</p>
+    </div>
+{% endif %}
+{% endblock %}

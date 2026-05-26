@@ -1,0 +1,49 @@
+{% extends "core/base.html" %}
+{% block title %}Cast Your Vote{% endblock %}
+{% block content %}
+
+{% comment %}
+╔══════════════════════════════════════════════════════════════╗
+║  VOTING PAGE                                                ║
+║  Shows a ballot: positions → candidates → radio buttons.    ║
+║  One vote per position. Double voting is blocked by:        ║
+║    1. Frontend: has_voted check hides the options           ║
+║    2. Backend: unique_together constraint in DB             ║
+║    3. Audit: every vote is logged in AuditLog               ║
+╚══════════════════════════════════════════════════════════════╝
+{% endcomment %}
+
+<h2 class="mb-20">{{ election.title }}</h2>
+<p class="mb-20">{{ election.description }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <!-- Loop through each position (President, VP, Secretary, etc.) -->
+    {% for pos in positions %}
+        <div class="card">
+            <h3>{{ pos.title }}</h3>
+            <p class="mb-10" style="color:#666;font-size:0.9rem;">{{ pos.description }}</p>
+            
+            {% if pos.has_voted %}
+                <!-- Voter already voted for this position → show message instead of options -->
+                <p class="badge badge-info">You have already voted for this position.</p>
+            {% elif pos.candidates %}
+                <!-- Show each candidate as a clickable radio button card -->
+                {% for c in pos.candidates %}
+                    <label style="display: block; padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">
+                        <input type="radio" name="position_{{ pos.id }}" value="{{ c.id }}" required>
+                        <strong>{{ c.user.get_full_name|default:c.user.username }}</strong>
+                        {% if c.bio %}<br><small>{{ c.bio|truncatewords:30 }}</small>{% endif %}
+                    </label>
+                {% endfor %}
+            {% else %}
+                <p style="color:#999;">No approved candidates for this position.</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <!-- Submit button with confirmation dialog -->
+    <button type="submit" class="btn btn-success" onclick="return confirm('Cast your votes? This cannot be undone.')">Submit My Votes</button>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+</form>
+{% endblock %}

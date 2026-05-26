@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block title %}Manage Positions{% endblock %}
+{% block content %}
+<h2 class="mb-20">Positions for: {{ election.title }}</h2>
+
+<div class="card">
+    <h3>Add Position</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Add Position</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Positions</h3>
+    <table>
+        <tr><th>Title</th><th>Max Votes</th><th>Order</th></tr>
+        {% for p in positions %}
+            <tr>
+                <td>{{ p.title }}</td>
+                <td>{{ p.max_votes }}</td>
+                <td>{{ p.order }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="3" style="color:#999;">No positions yet. Add one above.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+<style>
+    form p { margin-bottom: 15px; }
+    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+    form p input, form p select, form p textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+</style>
+{% endblock %}

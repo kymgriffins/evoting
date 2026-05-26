@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% block title %}Manage Candidates{% endblock %}
+{% block content %}
+<h2 class="mb-20">Manage Candidates</h2>
+
+{% if pending %}
+    <div class="card">
+        <h3>Pending Approvals ({{ pending|length }})</h3>
+        {% for c in pending %}
+            <div style="border:1px solid #eee; padding:15px; border-radius:6px; margin-bottom:10px;">
+                <div class="flex justify-between">
+                    <div>
+                        <strong>{{ c.user.get_full_name|default:c.user.username }}</strong> - {{ c.position }}<br>
+                        <small>{{ c.bio|truncatewords:30 }}</small>
+                    </div>
+                    <form method="post" class="flex" style="gap:5px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="candidate_id" value="{{ c.id }}">
+                        <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card">
+    <h3>All Candidates</h3>
+    <table>
+        <tr><th>Name</th><th>Position</th><th>Election</th><th>Status</th></tr>
+        {% for c in candidates %}
+            <tr>
+                <td>{{ c.user.get_full_name|default:c.user.username }}</td>
+                <td>{{ c.position }}</td>
+                <td>{{ c.election.title }}</td>
+                <td>{% if c.is_approved %}<span class="badge badge-success">Approved</span>{% else %}<span class="badge badge-warning">Pending</span>{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" style="color:#999;">No candidates registered.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

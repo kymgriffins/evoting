@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+{% block title %}Candidate Setup{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 40px auto;">
+    <h3>Complete Your Candidate Profile</h3>
+    <p class="mb-20">You registered as a candidate. Please complete your profile to appear in the election.</p>
+    <form method="post">
+        {% csrf_token %}
+        <label>Select Election:</label>
+        <select name="election" required>
+            <option value="">-- Choose Election --</option>
+            {% for e in elections %}
+                <option value="{{ e.id }}">{{ e.title }} (ends {{ e.end_date|date:"M d" }})</option>
+            {% endfor %}
+        </select>
+        {{ form.as_p }}
+        <button type="submit" class="btn">Submit for Approval</button>
+    </form>
+</div>
+<style>
+    form p { margin-bottom: 15px; }
+    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+    form p input, form p select, form p textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+</style>
+{% endblock %}

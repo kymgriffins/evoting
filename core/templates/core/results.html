@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% block title %}Election Results{% endblock %}
+{% block content %}
+<h2 class="mb-20">Election Results</h2>
+
+{% for r in results %}
+    <div class="card">
+        <h3>{{ r.election.title }}</h3>
+        <small class="mb-10" style="display:block;color:#666;">{{ r.election.start_date|date:"M d, Y" }} - {{ r.election.end_date|date:"M d, Y" }}</small>
+        {% for p in r.positions %}
+            <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                <h4>{{ p.position.title }}</h4>
+                {% with total_votes=p.candidates|length %}
+                {% endwith %}
+                <table>
+                    <tr><th>Candidate</th><th>Votes</th></tr>
+                    {% for cd in p.candidates %}
+                        <tr>
+                            <td><strong>{{ cd.candidate.user.get_full_name|default:cd.candidate.user.username }}</strong></td>
+                            <td>{{ cd.vote_count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="2" style="color:#999;">No results yet.</td></tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+{% empty %}
+    <div class="card text-center">
+        <p>No completed elections yet.</p>
+    </div>
+{% endfor %}
+{% endblock %}

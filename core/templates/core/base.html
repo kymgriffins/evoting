@@ -1,0 +1,176 @@
+<!-- base.html — THE MASTER LAYOUT for every page in the app.
+     
+     Every other HTML template "extends" this file, which means:
+     - The nav bar (top menu) appears on every page
+     - The footer appears on every page
+     - All styles are defined here (inline in <style>)
+     - Each page only needs to fill in the block content section
+     
+     Think of this as the "skeleton" that all pages share.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EVoting System{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;  /* Light gray background */
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Layout container — centered, max 1100px wide */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* ═══ NAVIGATION BAR ═══ */
+        nav {
+            background: #1a1a2e;  /* Dark navy blue */
+            padding: 15px 0;
+        }
+        nav .container { display: flex; justify-content: space-between; align-items: center; }
+        nav h1 { color: #fff; font-size: 1.3rem; }
+        nav h1 a { color: #fff; text-decoration: none; }
+        nav ul { list-style: none; display: flex; gap: 20px; }
+        nav ul li a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+        nav ul li a:hover { color: #fff; }
+        
+        /* ═══ BUTTONS ═══ */
+        .btn {
+            display: inline-block; padding: 10px 20px;
+            background: #16213e; color: #fff;
+            text-decoration: none; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 0.9rem;
+        }
+        .btn:hover { background: #0f3460; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #219a52; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-warning { background: #f39c12; }
+        .btn-warning:hover { background: #d68910; }
+        .btn-outline { background: transparent; border: 2px solid #16213e; color: #16213e; }
+        .btn-outline:hover { background: #16213e; color: #fff; }
+        
+        /* ═══ CARDS (white boxes with shadow) ═══ */
+        .card {
+            background: #fff; border-radius: 10px; padding: 25px;
+            margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .card h3 { margin-bottom: 15px; color: #1a1a2e; }
+        
+        /* ═══ GRID — responsive card grid ═══ */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        
+        /* ═══ STAT CARDS (big numbers on admin dashboard) ═══ */
+        .stat-card { text-align: center; padding: 30px; }
+        .stat-card .number { font-size: 2.5rem; font-weight: bold; color: #16213e; }
+        .stat-card .label { color: #666; font-size: 0.9rem; }
+        
+        /* ═══ FLASH MESSAGES (success/error popups) ═══ */
+        .messages { list-style: none; margin: 15px 0; }
+        .messages li { padding: 12px 20px; border-radius: 6px; margin-bottom: 8px; }
+        .messages .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .messages .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .messages .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .messages .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        
+        /* ═══ FORM STYLES ═══ */
+        form label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        form input, form select, form textarea {
+            width: 100%; padding: 10px;
+            border: 1px solid #ddd; border-radius: 6px;
+            margin-bottom: 15px; font-size: 0.9rem;
+        }
+        form textarea { min-height: 100px; }
+        
+        /* ═══ TABLES ═══ */
+        table { width: 100%; border-collapse: collapse; }
+        table th, table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        table th { background: #f8f9fa; font-weight: 600; }
+        
+        /* ═══ BADGES (small colored labels like "Completed", "Pending") ═══ */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        
+        /* ═══ HERO (landing page banner) ═══ */
+        .hero { text-align: center; padding: 80px 20px; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 15px; color: #1a1a2e; }
+        .hero p { font-size: 1.1rem; color: #666; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        
+        /* ═══ FOOTER ═══ */
+        .footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; }
+        
+        /* ═══ UTILITY CLASSES ═══ */
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .text-center { text-align: center; }
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .justify-between { justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <!-- ═══ NAVIGATION BAR ═══ -->
+    <nav>
+        <div class="container">
+            <h1><a href="/">EVoting System</a></h1>
+            <ul>
+                {% if user.is_authenticated %}
+                    <!-- Links for logged-in users -->
+                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    {% if user.role == 'admin' %}
+                        <!-- Admin-only links -->
+                        <li><a href="{% url 'admin_elections' %}">Elections</a></li>
+                        <li><a href="{% url 'admin_candidates' %}">Candidates</a></li>
+                    {% endif %}
+                    {% if user.role == 'candidate' %}
+                        <!-- Candidate-only links -->
+                        <li><a href="{% url 'manage_manifestos' %}">My Manifestos</a></li>
+                    {% endif %}
+                    <!-- Links for everyone logged in -->
+                    <li><a href="{% url 'results' %}">Results</a></li>
+                    <li><a href="{% url 'manifesto_tracking' %}">Tracking</a></li>
+                    <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
+                    <li><a href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
+                {% else %}
+                    <!-- Links for guests -->
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="container">
+        <!-- Display flash messages (success/error/warning popups) -->
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- Each page fills this block with its own content -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ═══ FOOTER ═══ -->
+    <div class="footer">
+        <p>EVoting System with Manifesto Tracking &copy; {% now "Y" %}</p>
+    </div>
+</body>
+</html>

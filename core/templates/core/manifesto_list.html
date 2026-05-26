@@ -1,0 +1,29 @@
+{% extends "core/base.html" %}
+{% block title %}My Manifestos{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="flex justify-between">
+        <h3>My Manifesto Items</h3>
+        <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
+    </div>
+    {% if manifestos %}
+        <table>
+            <tr><th>Title</th><th>Category</th><th>Created</th><th>Actions</th></tr>
+            {% for m in manifestos %}
+                <tr>
+                    <td>{{ m.title }}</td>
+                    <td>{{ m.get_category_display }}</td>
+                    <td>{{ m.created_at|date:"M d, Y" }}</td>
+                    <td class="flex" style="gap:5px">
+                        <a href="{% url 'manifesto_edit' m.id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a>
+                        <a href="{% url 'manifesto_delete' m.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p class="mt-20">No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
+    {% endif %}
+</div>
+{% endblock %}
