@@ -1,0 +1,469 @@
+{% extends "core/base.html" %}
+{% block title %}Documentation — EVoting System{% endblock %}
+{% block content %}
+
+<style>
+.doc-sidebar { position:sticky; top:80px; width:240px; flex-shrink:0; }
+.doc-sidebar a { display:block; padding:8px 12px; color:var(--text-muted); text-decoration:none; font-size:0.85rem; border-radius:6px; margin-bottom:2px; }
+.doc-sidebar a:hover, .doc-sidebar a.active { background:#eef2ff; color:var(--primary); }
+.doc-sidebar .section-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); padding:12px 12px 4px; }
+.doc-main { flex:1; min-width:0; }
+.doc-main h2 { font-size:1.5rem; margin-bottom:16px; color:var(--primary); padding-bottom:8px; border-bottom:2px solid var(--border); }
+.doc-main h3 { font-size:1.1rem; margin:24px 0 10px; color:var(--text); }
+.doc-main h4 { font-size:0.95rem; margin:16px 0 6px; color:var(--text); }
+.doc-main p, .doc-main li { font-size:0.9rem; line-height:1.7; color:var(--text); }
+.doc-main code { background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.82rem; color:var(--danger); }
+.doc-main pre { background:#1e293b; color:#e2e8f0; padding:16px; border-radius:8px; overflow-x:auto; font-size:0.82rem; line-height:1.6; margin:10px 0; }
+.doc-main pre code { background:transparent; color:inherit; padding:0; }
+.doc-main .note { background:#fffbeb; border-left:3px solid var(--warning); padding:12px 16px; border-radius:6px; margin:12px 0; font-size:0.85rem; }
+.doc-main .info-box { background:#eff6ff; border-left:3px solid var(--info); padding:12px 16px; border-radius:6px; margin:12px 0; font-size:0.85rem; }
+.doc-main table { width:100%; border-collapse:collapse; margin:10px 0; font-size:0.85rem; }
+.doc-main table th { background:#f8fafc; font-weight:600; padding:10px 12px; text-align:left; border-bottom:2px solid var(--border); }
+.doc-main table td { padding:8px 12px; border-bottom:1px solid var(--border); }
+.doc-main table tr:hover td { background:#f8fafc; }
+.doc-main .model-card { background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:16px; margin:12px 0; }
+.doc-main .model-card h4 { margin-top:0; color:var(--primary); }
+.doc-main .model-card .field { display:inline-block; background:#fff; border:1px solid var(--border); padding:3px 10px; border-radius:4px; font-size:0.78rem; margin:2px; }
+.doc-main .model-card .fk { border-color:#93c5fd; background:#eff6ff; }
+.doc-main .model-card .pk { border-color:#fde68a; background:#fffbeb; font-weight:600; }
+.doc-main .step-card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px; margin:10px 0; display:flex; gap:14px; align-items:flex-start; }
+.doc-main .step-num { width:32px; height:32px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; }
+.doc-main .test-card { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px; margin:10px 0; }
+.doc-main .test-card h4 { color:#065f46; }
+.doc-main .youtube-link { display:inline-flex; align-items:center; gap:6px; background:#fee2e2; color:#991b1b; padding:8px 14px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:500; margin:4px; }
+.doc-main .youtube-link:hover { background:#fecaca; }
+
+@media (max-width:900px) {
+    .doc-sidebar { display:none; }
+}
+</style>
+
+<div class="flex" style="align-items:flex-start; gap:30px;">
+    <div class="doc-sidebar">
+        <div class="section-label">Getting Started</div>
+        <a href="#overview">Overview</a>
+        <a href="#quickstart">Quick Start</a>
+        <div class="section-label">Architecture</div>
+        <a href="#models">Models</a>
+        <a href="#views">Views</a>
+        <a href="#templates">Templates</a>
+        <a href="#migrations">Migrations</a>
+        <div class="section-label">Testing</div>
+        <a href="#mock-test">Mock Test</a>
+        <a href="#credentials">Test Credentials</a>
+        <div class="section-label">Resources</div>
+        <a href="#youtube">YouTube Tutorials</a>
+    </div>
+
+    <div class="doc-main">
+
+        <h2 id="overview">Overview</h2>
+        <p>The <strong>EVoting System</strong> is a Django-powered platform for student council elections with integrated manifesto tracking. Built with <strong>Python, Django 6.0, SQLite, and Django REST Framework</strong>.</p>
+
+        <div class="info-box">
+            <strong>Three user roles:</strong> Admin (manages elections), Candidate (uploads manifestos + progress updates), Voter (casts votes + rates manifestos).
+        </div>
+
+        <p><strong>Key features:</strong></p>
+        <ul>
+            <li>Secure electronic voting with double-vote prevention</li>
+            <li>Manifesto tracking — candidates post progress updates on promises</li>
+            <li>Public leaderboard ranked by promise success rate</li>
+            <li>Audit logging — every action is recorded (transparency without blockchain)</li>
+            <li>REST API — all data available as JSON</li>
+            <li>Responsive design — works on mobile and desktop</li>
+        </ul>
+
+        <div class="note">
+            <strong>School project note:</strong> This is designed for the Catholic University of Eastern Africa (CUEA) Student Council elections but can be adapted for any organization.
+        </div>
+
+        <h2 id="quickstart">Quick Start</h2>
+
+        <div class="step-card">
+            <div class="step-num">1</div>
+            <div>
+                <strong>Clone &amp; install</strong>
+                <pre><code>git clone https://github.com/kymgriffins/evoting.git
+cd evoting
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+pip install -r requirements.txt</code></pre>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">2</div>
+            <div>
+                <strong>Run migrations &amp; seed data</strong>
+                <pre><code>python manage.py migrate
+python manage.py populate_cuea</code></pre>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">3</div>
+            <div>
+                <strong>Start the server</strong>
+                <pre><code>python manage.py runserver</code></pre>
+                <p>Visit <code>http://localhost:8000</code> and use the <strong>Quick Test Login</strong> buttons on the login page.</p>
+            </div>
+        </div>
+
+        <h2 id="models">Models (Database Schema)</h2>
+        <p>The app has <strong>9 database tables</strong>. Here's how they connect:</p>
+
+        <div class="model-card">
+            <h4>User</h4>
+            <p>Extends Django's built-in user with:</p>
+            <span class="field pk">id</span>
+            <span class="field">username</span>
+            <span class="field">password</span>
+            <span class="field">email</span>
+            <span class="field">role</span> <span class="field">student_id</span>
+            <span class="field">is_verified</span>
+            <p style="margin-top:6px;font-size:0.8rem;">Roles: <code>voter</code>, <code>candidate</code>, <code>admin</code></p>
+        </div>
+
+        <div class="model-card">
+            <h4>Election</h4>
+            <span class="field pk">id</span>
+            <span class="field">title</span>
+            <span class="field">description</span>
+            <span class="field">start_date</span>
+            <span class="field">end_date</span>
+            <span class="field">is_active</span>
+            <span class="field">created_at</span>
+            <p style="margin-top:6px;font-size:0.8rem;">A voting event with a time window.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>Position</h4>
+            <span class="field pk">id</span>
+            <span class="field">title</span>
+            <span class="field">description</span>
+            <span class="field">order</span>
+            <span class="field fk">election (FK)</span>
+            <p style="margin-top:6px;font-size:0.8rem;">E.g. President, Vice President, Secretary, Treasurer.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>Candidate</h4>
+            <span class="field pk">id</span>
+            <span class="field fk">user (OneToOne)</span>
+            <span class="field fk">position (FK)</span>
+            <span class="field fk">election (FK)</span>
+            <span class="field">bio</span>
+            <span class="field">is_approved</span>
+            <p style="margin-top:6px;font-size:0.8rem;">A person running for office. Must be approved by admin.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>Manifesto</h4>
+            <span class="field pk">id</span>
+            <span class="field fk">candidate (FK)</span>
+            <span class="field">title</span>
+            <span class="field">description</span>
+            <span class="field">category</span>
+            <p style="margin-top:6px;font-size:0.8rem;">A campaign promise. Categories: Education, Healthcare, Infrastructure, Student Welfare, Other.<br><strong>Immutable</strong> — once created, can only be updated via progress updates.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>Vote</h4>
+            <span class="field pk">id</span>
+            <span class="field fk">voter (FK→User)</span>
+            <span class="field fk">candidate (FK)</span>
+            <span class="field fk">position (FK)</span>
+            <span class="field fk">election (FK)</span>
+            <span class="field">timestamp</span>
+            <p style="margin-top:6px;font-size:0.8rem;"><code>unique_together = [voter, position, election]</code> prevents double voting.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>ManifestoUpdate</h4>
+            <span class="field pk">id</span>
+            <span class="field fk">manifesto (FK)</span>
+            <span class="field">status</span>
+            <span class="field">description</span>
+            <span class="field">evidence_url</span>
+            <span class="field">created_at</span>
+            <p style="margin-top:6px;font-size:0.8rem;">Progress update: Not Started, In Progress, Completed, Delayed.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>ManifestoRating</h4>
+            <span class="field pk">id</span>
+            <span class="field fk">user (FK)</span>
+            <span class="field fk">manifesto (FK)</span>
+            <span class="field">rating (1-5)</span>
+            <span class="field">comment</span>
+            <p style="margin-top:6px;font-size:0.8rem;">One rating per user per manifesto.</p>
+        </div>
+
+        <div class="model-card">
+            <h4>AuditLog</h4>
+            <span class="field pk">id</span>
+            <span class="field fk">user (FK, nullable)</span>
+            <span class="field">action</span>
+            <span class="field">details</span>
+            <span class="field">ip_address</span>
+            <span class="field">timestamp</span>
+            <p style="margin-top:6px;font-size:0.8rem;">Records every important action for transparency. Replaces blockchain.</p>
+        </div>
+
+        <h3>Entity Relationship</h3>
+        <pre><code>User ──> Candidate ──> Position ──> Election
+  │                      │               │
+  ├──> Vote ─────────────┘               │
+  │         │                            │
+  │         └────────────────────────────┘
+  │
+  └──> ManifestoRating ──> Manifesto ──> Candidate
+                                │
+                          ManifestoUpdate</code></pre>
+
+        <h2 id="views">Views (How Pages are Served)</h2>
+        <p>The app uses <strong>function-based views</strong> in a single <code>core/views.py</code> file. Each URL maps to a view function that:</p>
+        <ol>
+            <li>Receives the HTTP request</li>
+            <li>Queries the database (models)</li>
+            <li>Renders an HTML template with the data</li>
+        </ol>
+
+        <h3>Public Views (no login)</h3>
+        <table>
+            <tr><th>URL</th><th>View Function</th><th>Template</th></tr>
+            <tr><td><code>/</code></td><td><code>home()</code></td><td>home.html</td></tr>
+            <tr><td><code>/register/</code></td><td><code>register()</code></td><td>register.html</td></tr>
+            <tr><td><code>/login/</code></td><td>Django LoginView</td><td>login.html</td></tr>
+            <tr><td><code>/results/</code></td><td><code>results()</code></td><td>results.html</td></tr>
+            <tr><td><code>/tracking/</code></td><td><code>manifesto_tracking()</code></td><td>manifesto_tracking.html</td></tr>
+            <tr><td><code>/leaderboard/</code></td><td><code>leaderboard()</code></td><td>leaderboard.html</td></tr>
+            <tr><td><code>/documentation/</code></td><td><code>documentation()</code></td><td>documentation.html</td></tr>
+        </table>
+
+        <h3>Authenticated Views (login required)</h3>
+        <table>
+            <tr><th>URL</th><th>Role</th><th>Purpose</th></tr>
+            <tr><td><code>/dashboard/</code></td><td>All</td><td>Role-based home</td></tr>
+            <tr><td><code>/candidate/setup/</code></td><td>Candidate</td><td>Profile creation</td></tr>
+            <tr><td><code>/candidate/manifestos/</code></td><td>Candidate</td><td>List manifestos</td></tr>
+            <tr><td><code>/vote/&lt;id&gt;/</code></td><td>Voter</td><td>Cast ballot</td></tr>
+            <tr><td><code>/admin/elections/</code></td><td>Admin</td><td>Manage elections</td></tr>
+            <tr><td><code>/admin/candidates/</code></td><td>Admin</td><td>Approve candidates</td></tr>
+            <tr><td><code>/admin/logs/</code></td><td>Admin</td><td>Audit trail</td></tr>
+        </table>
+
+        <h3>API Views (REST Framework)</h3>
+        <table>
+            <tr><th>Endpoint</th><th>Method</th><th>Access</th></tr>
+            <tr><td><code>/api/elections/</code></td><td>GET</td><td>Anyone</td></tr>
+            <tr><td><code>/api/candidates/</code></td><td>GET</td><td>Anyone</td></tr>
+            <tr><td><code>/api/manifestos/</code></td><td>GET</td><td>Anyone</td></tr>
+            <tr><td><code>/api/votes/</code></td><td>GET</td><td>Own votes only</td></tr>
+            <tr><td><code>/api/elections/&lt;id&gt;/results/</code></td><td>GET</td><td>Anyone</td></tr>
+            <tr><td><code>/api/leaderboard/</code></td><td>GET</td><td>Anyone</td></tr>
+            <tr><td><code>/api/audit-logs/</code></td><td>GET</td><td>Admin only</td></tr>
+        </table>
+
+        <div class="info-box">
+            <strong>Key concept:</strong> Views use <code>log_audit()</code> to record every important action. This creates the audit trail that makes the system transparent.
+        </div>
+
+        <h2 id="templates">Templates (HTML UI)</h2>
+        <p>All templates use <strong>Django's template inheritance</strong>. Every page extends <code>base.html</code> which provides:</p>
+        <ul>
+            <li>Navigation bar with role-based menu items</li>
+            <li>Flash message display (success/error popups)</li>
+            <li>Footer</li>
+            <li>Responsive CSS with CSS variables</li>
+        </ul>
+
+        <h3>Template structure</h3>
+        <pre><code>templates/
+├── core/
+│   ├── base.html              ← Master layout (nav, footer, CSS)
+│   ├── home.html              ← Landing page
+│   ├── dashboard.html         ← Role-based dashboard
+│   ├── vote.html              ← Ballot with avatars + review
+│   ├── results.html           ← Election results
+│   ├── leaderboard.html       ← Candidate rankings
+│   ├── manifesto_tracking.html ← Promise tracking
+│   ├── manifesto_list.html    ← Candidate's manifesto list
+│   ├── manifesto_form.html    ← Create manifesto form
+│   ├── manifesto_updates.html ← Progress updates + ratings
+│   ├── candidate_setup.html   ← Candidate profile form
+│   ├── admin_elections.html   ← Manage elections
+│   ├── admin_positions.html   ← Manage positions
+│   ├── admin_candidates.html  ← Approve/reject
+│   ├── admin_audit.html       ← Audit log viewer
+│   └── documentation.html     ← This page
+└── registration/
+    ├── login.html
+    └── register.html</code></pre>
+
+        <h3>How to add a new page</h3>
+        <ol>
+            <li>Create the template file (extend <code>base.html</code>, fill in <code>&#123;&#37; block content &#37;&#125;</code> block)</li>
+            <li>Add a view function in <code>core/views.py</code></li>
+            <li>Add a URL pattern in <code>evoting_project/urls.py</code></li>
+            <li>Run the server and test</li>
+        </ol>
+
+        <h2 id="migrations">Migrations (Database Changes)</h2>
+        <p>Migrations are Django's way of propagating changes to the database schema. They're like version control for your database.</p>
+
+        <h3>Existing migrations</h3>
+        <pre><code>core/migrations/
+├── 0001_initial.py         # All tables except ManifestoRating
+├── 0002_manifestorating.py # Added ManifestoRating table
+└── __init__.py</code></pre>
+
+        <h3>How to run migrations</h3>
+        <div class="step-card">
+            <div class="step-num">1</div>
+            <div>
+                <strong>Make changes to models.py</strong>
+                <p>Add/edit fields in <code>core/models.py</code>.</p>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">2</div>
+            <div>
+                <strong>Create migration file</strong>
+                <pre><code>python manage.py makemigrations</code></pre>
+                <p>This auto-generates a migration file in <code>core/migrations/</code>.</p>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">3</div>
+            <div>
+                <strong>Apply migration</strong>
+                <pre><code>python manage.py migrate</code></pre>
+                <p>This updates the actual database.</p>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">4</div>
+            <div>
+                <strong>Check migration status</strong>
+                <pre><code>python manage.py showmigrations</code></pre>
+                <p>Shows which migrations have been applied (<code>[X]</code>) and which are pending (<code>[ ]</code>).</p>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>Reset database:</strong> Delete <code>db.sqlite3</code> and re-run <code>python manage.py migrate && python manage.py populate_cuea</code> to start fresh.
+        </div>
+
+        <h3>Rollback a migration</h3>
+        <pre><code>python manage.py migrate core 0001
+python manage.py migrate core 0002</code></pre>
+        <p>Replace <code>0001</code> with the migration number you want to go back to.</p>
+
+        <h3>Check what SQL a migration will run</h3>
+        <pre><code>python manage.py sqlmigrate core 0002</code></pre>
+        <p>Preview the SQL without applying it.</p>
+
+        <h2 id="mock-test">Mock Test Presentation</h2>
+        <p>Use this test flow to demonstrate the app in a presentation. Each step includes credentials and expected outcomes.</p>
+
+        <div class="test-card">
+            <h4>Test Flow 1: Admin — Create an Election</h4>
+            <ol>
+                <li>Go to <code>/login/</code> and click <strong>Admin</strong> (or use <code>admin</code> / <code>admin123</code>)</li>
+                <li>Click <strong>Elections</strong> in the nav</li>
+                <li>Fill in title, description, set start/end dates (future dates)</li>
+                <li>Select <strong>"Clone positions from"</strong> = "CUEA Student Council Elections 2026"</li>
+                <li>Click <strong>Create Election</strong></li>
+                <li><em>Expected:</em> Election created with 4 positions (President, VP, Secretary, Treasurer)</li>
+            </ol>
+        </div>
+
+        <div class="test-card">
+            <h4>Test Flow 2: Candidate — Post Manifesto Updates</h4>
+            <ol>
+                <li>Go to <code>/login/</code> and click <strong>Candidate</strong> (or <code>cand001</code> / <code>cand123</code>)</li>
+                <li>Click <strong>Manifestos</strong> in the nav</li>
+                <li>Click <strong>Updates</strong> on any manifesto</li>
+                <li>Set status = "In Progress", write a description, click <strong>Post Update</strong></li>
+                <li><em>Expected:</em> Update appears, audit log records it</li>
+            </ol>
+        </div>
+
+        <div class="test-card">
+            <h4>Test Flow 3: Voter — Cast Vote</h4>
+            <ol>
+                <li>Go to <code>/login/</code> and click <strong>Voter</strong> (or <code>v0001</code> / <code>voter123</code>)</li>
+                <li>Click <strong>Dashboard</strong>, then <strong>Cast Your Vote</strong> on the active election</li>
+                <li>Select a candidate for each position (cards highlight green with checkmark)</li>
+                <li>Click <strong>Review & Cast Vote</strong></li>
+                <li>Review selections in the modal, click <strong>Confirm & Cast Votes</strong></li>
+                <li><em>Expected:</em> Success message, dashboard shows "Voted" badge</li>
+            </ol>
+        </div>
+
+        <div class="test-card">
+            <h4>Test Flow 4: Voter — Rate Manifestos</h4>
+            <ol>
+                <li>Login as voter (same as above)</li>
+                <li>Go to <strong>Tracking</strong> in the nav</li>
+                <li>Click <strong>Rate</strong> on any manifesto</li>
+                <li>Select stars and optional comment, submit</li>
+                <li><em>Expected:</em> Rating shows in the Leaderboard</li>
+            </ol>
+        </div>
+
+        <div class="test-card">
+            <h4>Test Flow 5: Admin — View Audit Trail</h4>
+            <ol>
+                <li>Login as <strong>Admin</strong></li>
+                <li>Click <strong>Audit</strong> in the nav</li>
+                <li>Use the search bar to filter by action type</li>
+                <li><em>Expected:</em> Every vote, registration, and update is timestamped with IP</li>
+            </ol>
+        </div>
+
+        <div class="test-card">
+            <h4>Test Flow 6: Leaderboard & Results (Public)</h4>
+            <ol>
+                <li>Visit <code>/leaderboard/</code> — see candidates ranked by success rate</li>
+                <li>Visit <code>/results/</code> — see past election results with vote counts</li>
+                <li>Visit <code>/tracking/</code> — see all manifestos with latest status</li>
+                <li><em>Expected:</em> No login required for these pages</li>
+            </ol>
+        </div>
+
+        <h2 id="credentials">Test Credentials</h2>
+        <table>
+            <tr><th>Role</th><th>Username</th><th>Password</th><th>Count</th></tr>
+            <tr><td>Super Admin</td><td><code>admin</code></td><td><code>admin123</code></td><td>1</td></tr>
+            <tr><td>Admin</td><td><code>admin02</code> — <code>admin05</code></td><td><code>admin123</code></td><td>4</td></tr>
+            <tr><td>Candidate</td><td><code>cand001</code> — <code>cand010</code></td><td><code>cand123</code></td><td>10</td></tr>
+            <tr><td>Voter</td><td><code>v0001</code> — <code>v0600</code></td><td><code>voter123</code></td><td>600</td></tr>
+        </table>
+
+        <h2 id="youtube">YouTube Tutorials</h2>
+        <p>These external resources help understand the Django concepts used in this project:</p>
+
+        <div>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ" target="_blank">&#9654; Django Project Setup</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=200" target="_blank">&#9654; Django Models (Database)</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=600" target="_blank">&#9654; Django Views & URLs</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=900" target="_blank">&#9654; Django Templates</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=1200" target="_blank">&#9654; Django Migrations</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=1500" target="_blank">&#9654; Django Admin Panel</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=1800" target="_blank">&#9654; Django REST Framework</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=2400" target="_blank">&#9654; User Authentication</a>
+            <a class="youtube-link" href="https://youtu.be/Fc2O3_2kax4?si=iwV6EuGpfhIe4UqZ&t=3000" target="_blank">&#9654; Deployment on Vercel</a>
+            <a class="youtube-link" href="https://docs.djangoproject.com/en/6.0/" target="_blank">&#9654; Django Official Docs</a>
+        </div>
+
+        <div class="note" style="margin-top:16px;">
+            <strong>Pro tip:</strong> Bookmark the <a href="https://docs.djangoproject.com/en/6.0/" target="_blank">Django 6.0 Documentation</a> — it's the most complete reference for all the concepts used here.
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

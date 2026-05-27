@@ -41,6 +41,12 @@ def is_candidate(user):
 
 # ─── PUBLIC PAGES (no login required) ────────────────────────
 
+def documentation(request):
+    """Comprehensive documentation page — explains models, views, templates,
+    migrations, testing, and provides external learning resources."""
+    return render(request, 'core/documentation.html')
+
+
 def home(request):
     """Landing page — shows active elections to everyone"""
     active_elections = Election.objects.filter(is_active=True, end_date__gte=timezone.now())

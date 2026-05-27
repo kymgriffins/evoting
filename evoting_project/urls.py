@@ -13,6 +13,7 @@ from core import views
 urlpatterns = [
     # ── Public Pages (no login required) ────────────────────
     path('', views.home, name='home'),                           # Landing page
+    path('documentation/', views.documentation, name='documentation'),  # App docs
     path('register/', views.register, name='register'),           # User registration
     path('login/', auth_views.LoginView.as_view(                  # Login (built-in Django view)
         template_name='registration/login.html'
