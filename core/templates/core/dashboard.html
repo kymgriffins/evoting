@@ -10,31 +10,31 @@
 ╚══════════════════════════════════════════════════════════════╝
 {% endcomment %}
 {% if section == 'admin' %}
-    <!-- Big stat cards showing system-wide numbers -->
-    <div class="grid">
-        <div class="card stat-card">
-            <div class="number">{{ total_voters }}</div>
-            <div class="label">Registered Voters</div>
+    <!-- Compact stat cards row -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+        <div class="card" style="padding:16px; text-align:center;">
+            <div style="font-size:1.3rem; font-weight:700; color:var(--primary);">{{ total_voters }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Voters</div>
         </div>
-        <div class="card stat-card">
-            <div class="number">{{ total_candidates }}</div>
-            <div class="label">Approved Candidates</div>
+        <div class="card" style="padding:16px; text-align:center;">
+            <div style="font-size:1.3rem; font-weight:700; color:var(--success);">{{ total_candidates }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Candidates</div>
         </div>
-        <div class="card stat-card">
-            <div class="number">{{ total_votes }}</div>
-            <div class="label">Total Votes Cast</div>
+        <div class="card" style="padding:16px; text-align:center;">
+            <div style="font-size:1.3rem; font-weight:700; color:var(--accent);">{{ total_votes }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Votes Cast</div>
         </div>
-        <div class="card stat-card">
-            <div class="number">{{ pending_candidates }}</div>
-            <div class="label">Pending Approvals</div>
+        <div class="card" style="padding:16px; text-align:center;">
+            <div style="font-size:1.3rem; font-weight:700; color:var(--warning);">{{ pending_candidates }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Pending</div>
         </div>
-        <div class="card stat-card">
-            <div class="number">{{ total_manifestos }}</div>
-            <div class="label">Total Manifestos</div>
+        <div class="card" style="padding:16px; text-align:center;">
+            <div style="font-size:1.3rem; font-weight:700; color:var(--info);">{{ total_manifestos }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Manifestos</div>
         </div>
-        <div class="card stat-card">
-            <div class="number">{{ total_updates }}</div>
-            <div class="label">Tracking Updates</div>
+        <div class="card" style="padding:16px; text-align:center;">
+            <div style="font-size:1.3rem; font-weight:700; color:var(--success);">{{ total_updates }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Updates</div>
         </div>
     </div>
 

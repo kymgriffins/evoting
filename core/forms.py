@@ -73,4 +73,4 @@ class PositionForm(forms.ModelForm):
     """Admin form to add positions to an election (President, VP, etc.)"""
     class Meta:
         model = Position
-        fields = ['title', 'description', 'max_votes', 'order']
+        fields = ['title', 'description', 'order']

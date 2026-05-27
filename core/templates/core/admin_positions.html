@@ -19,17 +19,17 @@
     </div>
     <div style="overflow-x:auto;">
         <table>
-            <tr><th>Title</th><th>Max Votes</th><th>Order</th></tr>
+            <tr><th>Title</th><th>Order</th></tr>
             {% for p in positions %}
                 <tr>
                     <td><strong>{{ p.title }}</strong></td>
-                    <td>{{ p.max_votes }}</td>
                     <td>{{ p.order }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="3" class="empty-state">No positions yet. Add one above.</td></tr>
+                <tr><td colspan="2" class="empty-state">No positions yet. Add one above.</td></tr>
             {% endfor %}
         </table>
     </div>
+    <p style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">One vote per position per voter.</p>
 </div>
 {% endblock %}
