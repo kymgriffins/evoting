@@ -3,6 +3,7 @@
 # Django handles validation, error messages, and HTML rendering automatically.
 
 from django import forms
+from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm  # Built-in Django registration form
 from .models import User, Candidate, Manifesto, ManifestoUpdate, ManifestoRating, Election, Position
 
@@ -80,6 +81,20 @@ class ElectionForm(forms.ModelForm):
         self.fields['clone_from'].queryset = Election.objects.all().order_by('-created_at')
         if self.instance.pk:
             self.fields.pop('clone_from')
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get('start_date')
+        end = cleaned.get('end_date')
+        now = timezone.now()
+
+        if start and start < now:
+            raise forms.ValidationError('Start date cannot be in the past.')
+        if start and end and end <= start:
+            raise forms.ValidationError('End date must be after start date.')
+        if end and end < now:
+            raise forms.ValidationError('End date cannot be in the past.')
+        return cleaned
 
 
 class PositionForm(forms.ModelForm):

@@ -53,12 +53,11 @@ class ManifestoSerializer(serializers.ModelSerializer):
 
 
 class VoteSerializer(serializers.ModelSerializer):
-    """API representation of a Vote. Timestamp is read-only
-    (auto-set when vote is created)."""
+    """API representation of a Vote. Only creation allowed — no editing."""
     class Meta:
         model = Vote
         fields = '__all__'
-        read_only_fields = ['timestamp']
+        read_only_fields = ['voter', 'timestamp']
 
 
 class ManifestoUpdateSerializer(serializers.ModelSerializer):

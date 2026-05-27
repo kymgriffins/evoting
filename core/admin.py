@@ -22,10 +22,16 @@ class CandidateAdmin(admin.ModelAdmin):
 
 
 class VoteAdmin(admin.ModelAdmin):
-    """Customize the Vote list view.
-    Shows who voted for whom, and allows filtering by election."""
+    """Vote viewing only — no editing or deleting to preserve integrity."""
     list_display = ['voter', 'candidate', 'position', 'election', 'timestamp']
     list_filter = ['election']
+
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # Register all models with the admin panel

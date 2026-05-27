@@ -60,6 +60,7 @@ def register(request):
             if user.role == 'candidate':
                 return redirect('candidate_setup')  # Candidates must set up profile
             return redirect('dashboard')
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = UserRegisterForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -182,13 +183,17 @@ def dashboard(request):
         pending_candidates = Candidate.objects.filter(is_approved=False).count()
         total_manifestos = Manifesto.objects.count()
         total_updates = ManifestoUpdate.objects.count()
+        voter_turnout = round((total_votes / (total_voters * max(len(all_elections), 1))) * 100, 1) if total_voters > 0 else 0
 
         election_stats = []
         for e in all_elections:
             vc = Vote.objects.filter(election=e).count()
             cc = Candidate.objects.filter(election=e, is_approved=True).count()
             mc = Manifesto.objects.filter(candidate__election=e).count()
-            election_stats.append({'election': e, 'votes': vc, 'candidates': cc, 'manifestos': mc})
+            pos_count = e.positions.count()
+            eligible_positions = pos_count if pos_count > 0 else 1
+            e_turnout = round((vc / (total_voters * eligible_positions)) * 100, 1) if total_voters > 0 else 0
+            election_stats.append({'election': e, 'votes': vc, 'candidates': cc, 'manifestos': mc, 'turnout': e_turnout})
 
         return render(request, 'core/dashboard.html', {
             'section': 'admin', 'now': timezone.now(),
@@ -197,6 +202,7 @@ def dashboard(request):
             'total_manifestos': total_manifestos, 'total_updates': total_updates,
             'active_elections': active_elections, 'past_elections': past_elections,
             'all_elections': all_elections, 'election_stats': election_stats,
+            'voter_turnout': voter_turnout,
         })
 
     elif user.role == 'candidate':
@@ -240,13 +246,26 @@ def candidate_setup(request):
     if request.method == 'POST':
         form = CandidateForm(request.POST)
         if form.is_valid():
+            election_id = request.POST.get('election')
+            position = form.cleaned_data['position']
+            if not election_id:
+                messages.error(request, 'Please select an election.')
+                return render(request, 'core/candidate_setup.html', {
+                    'form': form, 'elections': active_elections, 'positions': positions,
+                })
+            if str(position.election_id) != election_id:
+                messages.error(request, 'Selected position does not belong to the chosen election.')
+                return render(request, 'core/candidate_setup.html', {
+                    'form': form, 'elections': active_elections, 'positions': positions,
+                })
             candidate = form.save(commit=False)
             candidate.user = request.user
-            candidate.election_id = request.POST.get('election')
+            candidate.election_id = election_id
             candidate.save()
             log_audit(request.user, 'Candidate profile created', request=request)
             messages.success(request, 'Candidate profile created! Awaiting admin approval.')
             return redirect('dashboard')
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = CandidateForm()
 
@@ -296,9 +315,10 @@ def manifesto_create(request):
             log_audit(request.user, f'Manifesto created: {manifesto.title}', request=request)
             messages.success(request, 'Manifesto item added!')
             return redirect('manage_manifestos')
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = ManifestoForm()
-    return render(request, 'core/manifesto_form.html', {'form': form, 'editing': False})
+    return render(request, 'core/manifesto_form.html', {'form': form})
 
 
 @login_required
@@ -318,6 +338,7 @@ def manifesto_updates(request, manifesto_pk):
             log_audit(request.user, f'Manifesto update: {manifesto.title}', request=request)
             messages.success(request, 'Update posted!')
             return redirect('manifesto_updates', manifesto_pk=manifesto.pk)
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = ManifestoUpdateForm()
 
@@ -420,6 +441,7 @@ def admin_elections(request):
                 log_audit(request.user, 'Election created', request=request)
                 messages.success(request, 'Election created!')
             return redirect('admin_elections')
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = ElectionForm()
 
@@ -440,6 +462,7 @@ def admin_election_edit(request, pk):
             form.save()
             messages.success(request, 'Election updated!')
             return redirect('admin_elections')
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = ElectionForm(instance=election)
     return render(request, 'core/admin_elections.html', {
@@ -460,6 +483,7 @@ def admin_positions(request, election_id):
             position.save()
             messages.success(request, 'Position added!')
             return redirect('admin_positions', election_id=election.id)
+        messages.error(request, 'Please correct the errors below.')
     else:
         form = PositionForm()
 
@@ -490,8 +514,9 @@ def admin_candidates(request):
             messages.success(request, 'Candidate approved!')
         elif action == 'reject':
             log_audit(request.user, f'Rejected candidate: {candidate.user.username}', request=request)
-            candidate.delete()
-            messages.success(request, 'Candidate rejected.')
+            candidate.is_approved = False
+            candidate.save()
+            messages.success(request, f'Candidate {candidate.user.username} rejected.')
         return redirect('admin_candidates')
 
     return render(request, 'core/admin_candidates.html', {
@@ -555,15 +580,13 @@ class ManifestoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
-class VoteViewSet(viewsets.ModelViewSet):
-    """API: List/create votes. The voter is set automatically
-    to the currently logged-in user."""
-    queryset = Vote.objects.all()
+class VoteViewSet(viewsets.ReadOnlyModelViewSet):
+    """API: List own votes only. Votes cannot be modified via API."""
     serializer_class = VoteSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(voter=self.request.user)
+    def get_queryset(self):
+        return Vote.objects.filter(voter=self.request.user)
 
 
 class ManifestoUpdateViewSet(viewsets.ModelViewSet):
