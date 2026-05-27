@@ -360,7 +360,7 @@ def vote_page(request, election_id):
     voted_positions = Vote.objects.filter(voter=request.user, election=election).values_list('position_id', flat=True)
 
     for pos in positions:
-        pos.candidates = Candidate.objects.filter(position=pos, is_approved=True)
+        pos.candidate_list = Candidate.objects.filter(position=pos, is_approved=True)
         pos.has_voted = pos.id in voted_positions
 
     return render(request, 'core/vote.html', {

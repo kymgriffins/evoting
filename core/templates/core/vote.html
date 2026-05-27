@@ -19,8 +19,8 @@
             
             {% if pos.has_voted %}
                 <p class="badge badge-info" style="padding:10px 16px; border-radius:8px;">You have already voted for this position.</p>
-            {% elif pos.candidates %}
-                {% for c in pos.candidates %}
+            {% elif pos.candidate_list %}
+                {% for c in pos.candidate_list %}
                     <label class="vote-option" style="display: block; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: var(--transition);">
                         <input type="radio" name="position_{{ pos.id }}" value="{{ c.id }}" required style="accent-color:var(--primary); margin-right:10px;">
                         <strong style="font-size:0.95rem;">{{ c.user.get_full_name|default:c.user.username }}</strong>
