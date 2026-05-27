@@ -1,13 +1,32 @@
 {% extends "core/base.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div class="card" style="max-width: 400px; margin: 40px auto;">
+<div class="card" style="max-width: 420px; margin: 40px auto;">
     <h3>Login</h3>
-    <form method="post">
+    <form method="post" id="loginForm">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn w-full" style="justify-content:center;">Login</button>
         <p class="mt-10" style="text-align:center; font-size:0.9rem;">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
     </form>
 </div>
+
+<div class="card" style="max-width: 420px; margin: 0 auto 40px;">
+    <h4 style="margin-bottom:10px;">Quick Test Login</h4>
+    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Click a role to auto-fill credentials.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button onclick="fillLogin('admin', 'admin123')" class="btn btn-sm btn-outline" style="justify-content:center;">Admin</button>
+        <button onclick="fillLogin('cand001', 'cand123')" class="btn btn-sm btn-warning" style="justify-content:center;">Candidate</button>
+        <button onclick="fillLogin('v0001', 'voter123')" class="btn btn-sm btn-success" style="justify-content:center;">Voter</button>
+        <button onclick="fillLogin('admin02', 'admin123')" class="btn btn-sm" style="justify-content:center;">Admin 02</button>
+    </div>
+</div>
+
+<script>
+function fillLogin(user, pass) {
+    document.getElementById('id_username').value = user;
+    document.getElementById('id_password').value = pass;
+    document.getElementById('loginForm').submit();
+}
+</script>
 {% endblock %}
