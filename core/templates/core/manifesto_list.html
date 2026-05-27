@@ -2,28 +2,53 @@
 {% block title %}My Manifestos{% endblock %}
 {% block content %}
 <div class="card">
-    <div class="flex justify-between">
+    <div class="flex justify-between flex-wrap">
         <h3>My Manifesto Items</h3>
         <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
     </div>
+    <input type="text" class="search-bar" id="manifestoSearch" placeholder="Search manifestos..." oninput="filterManifestos()">
     {% if manifestos %}
-        <table>
-            <tr><th>Title</th><th>Category</th><th>Created</th><th>Actions</th></tr>
-            {% for m in manifestos %}
-                <tr>
-                    <td>{{ m.title }}</td>
-                    <td>{{ m.get_category_display }}</td>
-                    <td>{{ m.created_at|date:"M d, Y" }}</td>
-                    <td class="flex" style="gap:5px">
-                        <a href="{% url 'manifesto_edit' m.id %}" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a>
-                        <a href="{% url 'manifesto_delete' m.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
+        <div style="overflow-x:auto;">
+            <table id="manifestoTable">
+                <tr><th>Title</th><th>Category</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+                {% for m in manifestos %}
+                    {% with latest=m.updates.first %}
+                    <tr class="manifesto-row">
+                        <td><strong>{{ m.title }}</strong></td>
+                        <td><span class="badge badge-info">{{ m.get_category_display }}</span></td>
+                        <td>{{ m.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if latest %}
+                                <span class="badge 
+                                    {% if latest.status == 'completed' %}badge-success
+                                    {% elif latest.status == 'in_progress' %}badge-info
+                                    {% elif latest.status == 'delayed' %}badge-danger
+                                    {% else %}badge-warning{% endif %}">
+                                    {{ latest.get_status_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-warning">No updates</span>
+                            {% endif %}
+                        </td>
+                        <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            </table>
+        </div>
     {% else %}
-        <p class="mt-20">No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
+        <div class="empty-state">
+            <div class="icon">&#128221;</div>
+            <p>No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
+        </div>
     {% endif %}
 </div>
+<script>
+function filterManifestos() {
+    var q = document.getElementById('manifestoSearch').value.toLowerCase();
+    document.querySelectorAll('.manifesto-row').forEach(function(row) {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}

@@ -126,42 +126,43 @@
 
     <!-- Manifesto list with latest status and action buttons -->
     <div class="card">
-        <div class="flex justify-between mb-10">
+        <div class="flex justify-between mb-10 flex-wrap">
             <h3>My Manifestos ({{ manifestos|length }})</h3>
             <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
         </div>
         {% if manifestos %}
-            <table>
-                <tr><th>Title</th><th>Category</th><th>Latest Status</th><th>Actions</th></tr>
-                {% for m in manifestos %}
-                    {% with latest=m.updates.first %}
-                    <tr>
-                        <td>{{ m.title }}</td>
-                        <td>{{ m.get_category_display }}</td>
-                        <td>
-                            {% if latest %}
-                                <span class="badge 
-                                    {% if latest.status == 'completed' %}badge-success
-                                    {% elif latest.status == 'in_progress' %}badge-info
-                                    {% elif latest.status == 'delayed' %}badge-danger
-                                    {% else %}badge-warning{% endif %}">
-                                    {{ latest.get_status_display }}
-                                </span>
-                            {% else %}
-                                <span class="badge badge-warning">No updates</span>
-                            {% endif %}
-                        </td>
-                        <td class="flex" style="gap:5px">
-                            <a href="{% url 'manifesto_edit' m.id %}" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a>
-                            <a href="{% url 'manifesto_delete' m.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this manifesto?')">Delete</a>
-                        </td>
-                    </tr>
-                    {% endwith %}
-                {% endfor %}
-            </table>
+            <div style="overflow-x:auto;">
+                <table>
+                    <tr><th>Title</th><th>Category</th><th>Latest Status</th><th>Actions</th></tr>
+                    {% for m in manifestos %}
+                        {% with latest=m.updates.first %}
+                        <tr>
+                            <td><strong>{{ m.title }}</strong></td>
+                            <td><span class="badge badge-info">{{ m.get_category_display }}</span></td>
+                            <td>
+                                {% if latest %}
+                                    <span class="badge 
+                                        {% if latest.status == 'completed' %}badge-success
+                                        {% elif latest.status == 'in_progress' %}badge-info
+                                        {% elif latest.status == 'delayed' %}badge-danger
+                                        {% else %}badge-warning{% endif %}">
+                                        {{ latest.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-warning">No updates</span>
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
+                        </tr>
+                        {% endwith %}
+                    {% endfor %}
+                </table>
+            </div>
         {% else %}
-            <p>No manifestos yet. <a href="{% url 'manifesto_create' %}">Create your first manifesto item.</a></p>
+            <div class="empty-state">
+                <div class="icon">&#128221;</div>
+                <p>No manifestos yet. <a href="{% url 'manifesto_create' %}">Create your first manifesto item.</a></p>
+            </div>
         {% endif %}
     </div>
 

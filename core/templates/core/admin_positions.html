@@ -13,23 +13,23 @@
 </div>
 
 <div class="card">
-    <h3>Positions</h3>
-    <table>
-        <tr><th>Title</th><th>Max Votes</th><th>Order</th></tr>
-        {% for p in positions %}
-            <tr>
-                <td>{{ p.title }}</td>
-                <td>{{ p.max_votes }}</td>
-                <td>{{ p.order }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="3" style="color:#999;">No positions yet. Add one above.</td></tr>
-        {% endfor %}
-    </table>
+    <div class="flex justify-between flex-wrap mb-10">
+        <h3>Positions</h3>
+        <span class="badge badge-info">{{ positions|length }} total</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <tr><th>Title</th><th>Max Votes</th><th>Order</th></tr>
+            {% for p in positions %}
+                <tr>
+                    <td><strong>{{ p.title }}</strong></td>
+                    <td>{{ p.max_votes }}</td>
+                    <td>{{ p.order }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3" class="empty-state">No positions yet. Add one above.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
-<style>
-    form p { margin-bottom: 15px; }
-    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-    form p input, form p select, form p textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
-</style>
 {% endblock %}

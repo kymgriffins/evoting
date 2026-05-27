@@ -39,10 +39,6 @@ urlpatterns = [
          name='manage_manifestos'),
     path('candidate/manifestos/create/', views.manifesto_create,  # Create new manifesto
          name='manifesto_create'),
-    path('candidate/manifestos/<int:pk>/edit/', views.manifesto_edit, # Edit manifesto
-         name='manifesto_edit'),
-    path('candidate/manifestos/<int:pk>/delete/', views.manifesto_delete, # Delete manifesto
-         name='manifesto_delete'),
     path('candidate/manifestos/<int:manifesto_pk>/updates/',      # Manifesto detail + updates
          views.manifesto_updates, name='manifesto_updates'),
 

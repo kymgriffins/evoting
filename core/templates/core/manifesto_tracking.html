@@ -1,22 +1,33 @@
 {% extends "core/base.html" %}
 {% block title %}Manifesto Tracking{% endblock %}
 {% block content %}
-<h2 class="mb-20">Manifesto Tracking Dashboard</h2>
-<p class="mb-20" style="color:#666;">Track the progress of elected candidates' campaign promises. Rate each manifesto to grade candidate performance.</p>
+<div class="flex justify-between flex-wrap mb-10">
+    <div>
+        <h2>Manifesto Tracking Dashboard</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Track the progress of elected candidates' campaign promises.</p>
+    </div>
+</div>
+
+<input type="text" class="search-bar" id="trackingSearch" placeholder="Search candidates or manifestos..." oninput="filterTracking()">
 
 {% for td in tracking_data %}
     <div class="card">
         <h3>{{ td.election.title }}</h3>
         {% for cd in td.candidates %}
-            <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px;">
-                <div class="flex justify-between">
+            <div class="tracking-candidate" style="margin: 20px 0; padding: 16px; background: #f8fafc; border-radius: 10px; border:1px solid var(--border);">
+                <div class="flex justify-between flex-wrap">
                     <div>
-                        <h4>{{ cd.candidate.user.get_full_name|default:cd.candidate.user.username }}</h4>
-                        <small style="color:#666;">{{ cd.candidate.position.title }}</small>
+                        <h4 style="font-size:1.05rem;">{{ cd.candidate.user.get_full_name|default:cd.candidate.user.username }}</h4>
+                        <span class="badge badge-info">{{ cd.candidate.position.title }}</span>
                     </div>
                     <div style="text-align:right;">
-                        <small style="color:#666;">Success Rate:</small>
-                        <strong style="{% if cd.candidate.success_rate >= 70 %}color:#27ae60;{% elif cd.candidate.success_rate >= 40 %}color:#f39c12;{% else %}color:#e74c3c;{% endif %}">{{ cd.candidate.success_rate }}%</strong>
+                        <small style="color:var(--text-muted);">Success:</small>
+                        <strong style="
+                            {% if cd.candidate.success_rate >= 70 %}color:var(--success);
+                            {% elif cd.candidate.success_rate >= 40 %}color:var(--warning);
+                            {% else %}color:var(--danger);{% endif %}">
+                            {{ cd.candidate.success_rate }}%
+                        </strong>
                         {% if cd.candidate.avg_rating > 0 %}
                             <br><small>⭐ {{ cd.candidate.avg_rating }}/5 ({{ cd.candidate.total_ratings }})</small>
                         {% endif %}
@@ -24,56 +35,58 @@
                 </div>
 
                 {% if cd.manifestos %}
-                    <table class="mt-10">
-                        <tr>
-                            <th>Promise</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                            <th>Rating</th>
-                            <th>Action</th>
-                        </tr>
-                        {% for md in cd.manifestos %}
+                    <div style="overflow-x:auto; margin-top:12px;">
+                        <table>
                             <tr>
-                                <td>{{ md.manifesto.title }}</td>
-                                <td>{{ md.manifesto.get_category_display }}</td>
-                                <td>
-                                    <span class="badge 
-                                        {% if md.latest_status == 'Completed' %}badge-success
-                                        {% elif md.latest_status == 'In Progress' %}badge-info
-                                        {% elif md.latest_status == 'Delayed' %}badge-danger
-                                        {% else %}badge-warning{% endif %}">
-                                        {{ md.latest_status }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if md.avg_rating > 0 %}
-                                        <span style="font-size:0.9rem;">
-                                            {% for i in "12345"|make_list %}
-                                                {% if forloop.counter <= md.avg_rating %}⭐{% endif %}
-                                            {% endfor %}
-                                        </span>
-                                        <br><small style="font-size:0.75rem;">{{ md.avg_rating }}/5 ({{ md.rating_count }})</small>
-                                    {% else %}
-                                        <small style="color:#999;">Unrated</small>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="flex" style="gap:3px;">
-                                        <a href="{% url 'manifesto_updates' md.manifesto.id %}" class="btn btn-sm">Updates</a>
-                                        {% if user.is_authenticated and user.role == 'voter' %}
-                                            <button onclick="showRatingForm({{ md.manifesto.id }}, '{{ md.manifesto.title|escapejs }}')" class="btn btn-sm btn-warning">Rate</button>
-                                        {% endif %}
-                                    </div>
-                                </td>
+                                <th>Promise</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Rating</th>
+                                <th>Action</th>
                             </tr>
-                        {% endfor %}
-                    </table>
+                            {% for md in cd.manifestos %}
+                                <tr class="manifesto-track-row">
+                                    <td><strong>{{ md.manifesto.title }}</strong></td>
+                                    <td><span class="badge badge-info">{{ md.manifesto.get_category_display }}</span></td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if md.latest_status == 'Completed' %}badge-success
+                                            {% elif md.latest_status == 'In Progress' %}badge-info
+                                            {% elif md.latest_status == 'Delayed' %}badge-danger
+                                            {% else %}badge-warning{% endif %}">
+                                            {{ md.latest_status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if md.avg_rating > 0 %}
+                                            <span style="font-size:0.85rem;">
+                                                {% for i in "12345"|make_list %}
+                                                    {% if forloop.counter <= md.avg_rating %}⭐{% endif %}
+                                                {% endfor %}
+                                            </span>
+                                            <br><small style="font-size:0.7rem; color:var(--text-muted);">{{ md.avg_rating }}/5 ({{ md.rating_count }})</small>
+                                        {% else %}
+                                            <small style="color:var(--text-muted);">Unrated</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-sm">
+                                            <a href="{% url 'manifesto_updates' md.manifesto.id %}" class="btn btn-sm">Updates</a>
+                                            {% if user.is_authenticated and user.role == 'voter' %}
+                                                <button onclick="showRatingForm({{ md.manifesto.id }}, '{{ md.manifesto.title|escapejs }}')" class="btn btn-sm btn-warning">Rate</button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
                 {% else %}
-                    <p class="mt-10" style="color:#999;">No manifestos uploaded.</p>
+                    <p class="mt-10" style="color:var(--text-muted); font-size:0.9rem;">No manifestos uploaded.</p>
                 {% endif %}
             </div>
         {% empty %}
-            <p>No candidates in this election.</p>
+            <p style="color:var(--text-muted);">No candidates in this election.</p>
         {% endfor %}
     </div>
 {% empty %}
@@ -84,7 +97,7 @@
 
 {% if user.is_authenticated and user.role == 'voter' %}
     <div id="ratingModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:30px; border-radius:10px; max-width:450px; width:90%;">
+        <div style="background:#fff; padding:30px; border-radius:12px; max-width:450px; width:90%; box-shadow:var(--shadow-lg);">
             <h4 id="ratingModalTitle" class="mb-10">Rate Manifesto</h4>
             <form method="post" action="">
                 {% csrf_token %}
@@ -99,7 +112,7 @@
                     {% endfor %}
                 </div>
                 <label style="display:block; margin-bottom:5px; font-weight:600;">Comment (optional):</label>
-                <textarea name="comment" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; margin-bottom:15px; box-sizing:border-box;"></textarea>
+                <textarea name="comment" rows="3" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-bottom:15px; box-sizing:border-box; font-family:inherit;"></textarea>
                 <div class="flex" style="gap:10px;">
                     <button type="submit" class="btn btn-success">Submit Rating</button>
                     <button type="button" class="btn btn-outline" onclick="closeRatingForm()">Cancel</button>
@@ -130,6 +143,21 @@
         document.getElementById('ratingModal').addEventListener('click', function(e) {
             if (e.target === this) closeRatingForm();
         });
+        function filterTracking() {
+            var q = document.getElementById('trackingSearch').value.toLowerCase();
+            document.querySelectorAll('.tracking-candidate').forEach(function(el) {
+                el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+    </script>
+{% else %}
+    <script>
+        function filterTracking() {
+            var q = document.getElementById('trackingSearch').value.toLowerCase();
+            document.querySelectorAll('.tracking-candidate').forEach(function(el) {
+                el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
     </script>
 {% endif %}
 {% endblock %}

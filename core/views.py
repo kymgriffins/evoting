@@ -302,32 +302,6 @@ def manifesto_create(request):
 
 
 @login_required
-def manifesto_edit(request, pk):
-    """Edit an existing manifesto"""
-    manifesto = get_object_or_404(Manifesto, pk=pk, candidate__user=request.user)
-    if request.method == 'POST':
-        form = ManifestoForm(request.POST, instance=manifesto)
-        if form.is_valid():
-            form.save()
-            log_audit(request.user, f'Manifesto updated: {manifesto.title}', request=request)
-            messages.success(request, 'Manifesto updated!')
-            return redirect('manage_manifestos')
-    else:
-        form = ManifestoForm(instance=manifesto)
-    return render(request, 'core/manifesto_form.html', {'form': form, 'editing': True})
-
-
-@login_required
-def manifesto_delete(request, pk):
-    """Delete a manifesto"""
-    manifesto = get_object_or_404(Manifesto, pk=pk, candidate__user=request.user)
-    log_audit(request.user, f'Manifesto deleted: {manifesto.title}', request=request)
-    manifesto.delete()
-    messages.success(request, 'Manifesto deleted.')
-    return redirect('manage_manifestos')
-
-
-@login_required
 def manifesto_updates(request, manifesto_pk):
     """View a single manifesto's detail page.
     Shows progress updates, user ratings & comments, and allows

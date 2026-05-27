@@ -6,28 +6,38 @@
 {% for r in results %}
     <div class="card">
         <h3>{{ r.election.title }}</h3>
-        <small class="mb-10" style="display:block;color:#666;">{{ r.election.start_date|date:"M d, Y" }} - {{ r.election.end_date|date:"M d, Y" }}</small>
+        <small style="display:block; color:var(--text-muted); margin-bottom:16px;">{{ r.election.start_date|date:"M d, Y" }} - {{ r.election.end_date|date:"M d, Y" }}</small>
         {% for p in r.positions %}
-            <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px;">
-                <h4>{{ p.position.title }}</h4>
-                {% with total_votes=p.candidates|length %}
-                {% endwith %}
-                <table>
-                    <tr><th>Candidate</th><th>Votes</th></tr>
-                    {% for cd in p.candidates %}
-                        <tr>
-                            <td><strong>{{ cd.candidate.user.get_full_name|default:cd.candidate.user.username }}</strong></td>
-                            <td>{{ cd.vote_count }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr><td colspan="2" style="color:#999;">No results yet.</td></tr>
-                    {% endfor %}
-                </table>
+            <div style="margin: 16px 0; padding: 16px; background: #f8fafc; border-radius: 10px; border:1px solid var(--border);">
+                <h4 style="margin-bottom:10px;">{{ p.position.title }}</h4>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <tr><th>Candidate</th><th>Votes</th><th></th></tr>
+                        {% for cd in p.candidates %}
+                            {% with max_vote=p.candidates.0.vote_count %}
+                            <tr>
+                                <td><strong>{{ cd.candidate.user.get_full_name|default:cd.candidate.user.username }}</strong></td>
+                                <td><strong>{{ cd.vote_count }}</strong></td>
+                                <td style="width:120px;">
+                                    <div style="background:var(--border); height:8px; border-radius:4px; overflow:hidden;">
+                                        <div style="height:100%; width:{% if max_vote > 0 %}{{ cd.vote_count|divisibleby:1|yesno:'' }}{% widthratio cd.vote_count max_vote 100 %}{% else %}0{% endif %}%; 
+                                            {% if forloop.first %}background:var(--success){% else %}background:var(--accent){% endif %}; border-radius:4px;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                        {% empty %}
+                            <tr><td colspan="3" style="color:var(--text-muted);">No results yet.</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
         {% endfor %}
     </div>
 {% empty %}
-    <div class="card text-center">
+    <div class="card empty-state">
+        <div class="icon">&#128200;</div>
         <p>No completed elections yet.</p>
     </div>
 {% endfor %}

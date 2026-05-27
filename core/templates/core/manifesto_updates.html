@@ -2,23 +2,44 @@
 {% block title %}Manifesto Updates{% endblock %}
 {% block content %}
 <div class="card">
-    <div class="flex justify-between">
+    <div class="flex justify-between flex-wrap">
         <div>
             <h3>{{ manifesto.title }}</h3>
-            <p><strong>Category:</strong> {{ manifesto.get_category_display }}</p>
-            <p>{{ manifesto.description }}</p>
+            <p style="color:var(--text-muted); font-size:0.9rem;"><strong>Category:</strong> {{ manifesto.get_category_display }}</p>
+            <p style="margin-top:8px;">{{ manifesto.description }}</p>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">Created {{ manifesto.created_at|date:"M d, Y" }}</p>
         </div>
         <div style="text-align:right;">
-            {% with avg=manifesto.ratings.aggregate.avg %}
-                {% if avg %}
-                    <span style="font-size:0.9rem;">
-                        {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= avg %}⭐{% endif %}
+            {% with ratings_list=manifesto.ratings.all %}
+                {% with avg=ratings_list|length|divisibleby:1|yesno:"" %}
+                    {% if ratings_list %}
+                        {% with avg_val=0 %}
+                            {% for r in ratings_list %}{% cycle '' '' '' '' '' %}{% endfor %}
+                        {% endwith %}
+                    {% endif %}
+                {% endwith %}
+                {% if ratings_list %}
+                    {% with total=ratings_list|length %}
+                        {% with sum=0 %}
+                            {% for r in ratings_list %}{% cycle '' '' '' '' '' %}{% endfor %}
+                        {% endwith %}
+                    {% endwith %}
+                    {% with avg_val=0 %}
+                        {% for r in ratings_list %}
+                            {% cycle '' '' '' '' '' %}
                         {% endfor %}
-                    </span>
-                    <br><small>{{ avg|floatformat:1 }}/5 ({{ manifesto.ratings.count }} ratings)</small>
+                    {% endwith %}
                 {% endif %}
             {% endwith %}
+            {% if avg_rating_display %}
+            {% else %}
+                {% with ratings_agg=manifesto.ratings.all %}
+                    {% if ratings_agg %}
+                        {% with avg_val=ratings_agg|length|divisibleby:1 %}
+                        {% endwith %}
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
         </div>
     </div>
 </div>
@@ -27,8 +48,8 @@
     <h4>Progress Updates</h4>
     {% if updates %}
         {% for u in updates %}
-            <div style="border: 1px solid #eee; padding: 15px; border-radius: 6px; margin-bottom: 10px;">
-                <div class="flex justify-between">
+            <div style="border:1px solid var(--border); padding:16px; border-radius:10px; margin-bottom:10px; transition:var(--transition);">
+                <div class="flex justify-between flex-wrap">
                     <span class="badge 
                         {% if u.status == 'completed' %}badge-success
                         {% elif u.status == 'in_progress' %}badge-info
@@ -36,16 +57,44 @@
                         {% else %}badge-warning{% endif %}">
                         {{ u.get_status_display }}
                     </span>
-                    <small>{{ u.created_at|date:"M d, Y H:i" }}</small>
+                    <small style="color:var(--text-muted);">{{ u.created_at|date:"M d, Y H:i" }}</small>
                 </div>
                 <p class="mt-10">{{ u.description }}</p>
-                {% if u.evidence_url %}<a href="{{ u.evidence_url }}" target="_blank" class="btn btn-sm mt-10">View Evidence</a>{% endif %}
+                {% if u.evidence_url %}<a href="{{ u.evidence_url }}" target="_blank" class="btn btn-sm mt-10" style="display:inline-flex;">View Evidence</a>{% endif %}
             </div>
         {% endfor %}
     {% else %}
-        <p>No updates yet.</p>
+        <div class="empty-state">
+            <div class="icon">&#128203;</div>
+            <p>No updates yet.</p>
+        </div>
     {% endif %}
 </div>
+
+{% if user.role == 'candidate' and user.candidate_profile == manifesto.candidate %}
+    <div class="card" style="border:2px solid var(--success);">
+        <div class="flex justify-between mb-10">
+            <h4>Add Progress Update</h4>
+            <span class="badge badge-success">Candidate Action</span>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:14px;">Post an update on what has been done for this manifesto promise.</p>
+        <form method="post">
+            {% csrf_token %}
+            <label for="id_status">Status:</label>
+            <select name="status" id="id_status">
+                <option value="not_started">Not Started</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="delayed">Delayed</option>
+            </select>
+            <label for="id_description">Description of work done:</label>
+            <textarea name="description" id="id_description" rows="4" placeholder="Describe what has been accomplished..."></textarea>
+            <label for="id_evidence_url">Evidence URL (optional):</label>
+            <input type="url" name="evidence_url" id="id_evidence_url" placeholder="https://example.com/evidence">
+            <button type="submit" class="btn btn-success">Post Update</button>
+        </form>
+    </div>
+{% endif %}
 
 {% if user.is_authenticated and user.role == 'voter' %}
     <div class="card">
@@ -53,16 +102,16 @@
         <form method="post" action="{% url 'rate_manifesto' manifesto.id %}">
             {% csrf_token %}
             <label style="display:block; margin-bottom:8px; font-weight:600;">Your Rating:</label>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div style="display:flex; gap:8px; margin-bottom:15px;">
                 {% for i in "12345"|make_list %}
                     <label style="cursor:pointer; font-size:2rem;">
                         <input type="radio" name="rating" value="{{ forloop.counter }}" required style="display:none;">
-                        <span class="star">☆</span>
+                        <span class="star" data-val="{{ forloop.counter }}">☆</span>
                     </label>
                 {% endfor %}
             </div>
             <label style="display:block; margin-bottom:5px; font-weight:600;">Comment (optional):</label>
-            <textarea name="comment" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; margin-bottom:15px; box-sizing:border-box;"></textarea>
+            <textarea name="comment" rows="3" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-bottom:15px; box-sizing:border-box; font-family:inherit;"></textarea>
             <button type="submit" class="btn btn-success">Submit Rating</button>
         </form>
     </div>
@@ -70,48 +119,57 @@
 
 <div class="card">
     <h4>User Ratings & Comments</h4>
-    {% with ratings=manifesto.ratings.all %}
-        {% if ratings %}
-            {% for r in ratings|slice:":10" %}
-                <div style="border:1px solid #eee; padding:12px; border-radius:6px; margin-bottom:8px;">
-                    <div class="flex justify-between">
+    {% with all_ratings=manifesto.ratings.all %}
+        {% if all_ratings %}
+            {% with avg=all_ratings|length %}
+            {% endwith %}
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:12px 16px; background:#f8fafc; border-radius:8px;">
+                <div style="text-align:center;">
+                    <div style="font-size:1.5rem; font-weight:700; color:var(--primary);">
+                        {% with rating_sum=0 %}
+                            {% for r in all_ratings %}
+                                {% cycle '' '' '' '' '' %}
+                            {% endfor %}
+                        {% endwith %}
+                        {% with total=all_ratings|length %}
+                            {% if total > 0 %}
+                                {% with s=0 %}
+                                    {% for r in all_ratings %}{% cycle '' '' '' '' '' %}{% endfor %}
+                                {% endwith %}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            {% for r in all_ratings|slice:":10" %}
+                <div style="border:1px solid var(--border); padding:12px 16px; border-radius:8px; margin-bottom:8px;">
+                    <div class="flex justify-between flex-wrap">
                         <span>
                             {% for i in "12345"|make_list %}
                                 {% if forloop.counter <= r.rating %}⭐{% endif %}
                             {% endfor %}
                             <strong>{{ r.rating }}/5</strong>
                         </span>
-                        <small style="color:#999;">{{ r.user.get_full_name|default:r.user.username }} · {{ r.created_at|date:"M d, Y" }}</small>
+                        <small style="color:var(--text-muted);">{{ r.user.get_full_name|default:r.user.username }} &middot; {{ r.created_at|date:"M d, Y" }}</small>
                     </div>
-                    {% if r.comment %}<p class="mt-5" style="font-size:0.9rem;">{{ r.comment }}</p>{% endif %}
+                    {% if r.comment %}<p style="margin-top:6px; font-size:0.9rem; color:var(--text);">{{ r.comment }}</p>{% endif %}
                 </div>
             {% endfor %}
-            {% if ratings|length > 10 %}
-                <p style="text-align:center; color:#666; margin-top:10px;">+ {{ ratings|length|add:"-10" }} more ratings</p>
+            {% if all_ratings|length > 10 %}
+                <p style="text-align:center; color:var(--text-muted); margin-top:10px; font-size:0.85rem;">+ {{ all_ratings|length|add:"-10" }} more ratings</p>
             {% endif %}
         {% else %}
-            <p>No ratings yet. Be the first to rate this manifesto!</p>
+            <div class="empty-state">
+                <div class="icon">&#11088;</div>
+                <p>No ratings yet. Be the first to rate this manifesto!</p>
+            </div>
         {% endif %}
     {% endwith %}
 </div>
 
-{% if user.role == 'candidate' and user.candidate_profile == manifesto.candidate %}
-    <div class="card">
-        <h4>Add Update</h4>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn">Post Update</button>
-        </form>
-    </div>
-{% endif %}
-
 <style>
-    form p { margin-bottom: 15px; }
-    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-    form p input, form p select, form p textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
-    .star { transition: transform 0.2s; cursor:pointer; }
-    .star:hover { transform: scale(1.3); display:inline-block; }
+    .star { transition: transform 0.2s; cursor:pointer; display:inline-block; }
+    .star:hover { transform: scale(1.3); }
 </style>
 
 <script>

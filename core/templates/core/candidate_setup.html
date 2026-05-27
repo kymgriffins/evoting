@@ -3,7 +3,7 @@
 {% block content %}
 <div class="card" style="max-width: 600px; margin: 40px auto;">
     <h3>Complete Your Candidate Profile</h3>
-    <p class="mb-20">You registered as a candidate. Please complete your profile to appear in the election.</p>
+    <p class="mb-20" style="color:var(--text-muted);">You registered as a candidate. Complete your profile to appear in the election.</p>
     <form method="post">
         {% csrf_token %}
         <label for="electionSelect">Select Election:</label>
@@ -23,7 +23,7 @@
         </select>
 
         <label for="id_bio">Biography:</label>
-        <textarea name="bio" id="id_bio" placeholder="Tell the voters about your experience and plans..." required></textarea>
+        <textarea name="bio" id="id_bio" placeholder="Tell voters about your experience and plans..." required></textarea>
 
         <label for="id_photo">Photo URL (optional):</label>
         <input type="url" name="photo" id="id_photo" placeholder="https://example.com/your-photo.jpg">
@@ -55,9 +55,4 @@
         });
     </script>
 </div>
-<style>
-    form p { margin-bottom: 15px; }
-    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-    form p input, form p select, form p textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
-</style>
 {% endblock %}

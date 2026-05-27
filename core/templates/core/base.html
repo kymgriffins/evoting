@@ -1,14 +1,3 @@
-<!-- base.html — THE MASTER LAYOUT for every page in the app.
-     
-     Every other HTML template "extends" this file, which means:
-     - The nav bar (top menu) appears on every page
-     - The footer appears on every page
-     - All styles are defined here (inline in <style>)
-     - Each page only needs to fill in the block content section
-     
-     Think of this as the "skeleton" that all pages share.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,141 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EVoting System{% endblock %}</title>
     <style>
+        :root {
+            --primary: #1a1a2e;
+            --primary-light: #16213e;
+            --accent: #0f3460;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+            --transition: all 0.2s ease;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;  /* Light gray background */
-            color: #333;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        
-        /* Layout container — centered, max 1100px wide */
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        
-        /* ═══ NAVIGATION BAR ═══ */
+
+        .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; width: 100%; }
+
         nav {
-            background: #1a1a2e;  /* Dark navy blue */
-            padding: 15px 0;
+            background: var(--primary);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        nav .container { display: flex; justify-content: space-between; align-items: center; }
-        nav h1 { color: #fff; font-size: 1.3rem; }
-        nav h1 a { color: #fff; text-decoration: none; }
-        nav ul { list-style: none; display: flex; gap: 20px; }
-        nav ul li a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
-        nav ul li a:hover { color: #fff; }
-        
-        /* ═══ BUTTONS ═══ */
+        nav .container { display: flex; justify-content: space-between; align-items: center; height: 60px; }
+        nav .brand { color: #fff; font-size: 1.15rem; font-weight: 700; text-decoration: none; letter-spacing: -0.3px; }
+        nav .brand span { color: var(--success); }
+        .nav-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; padding: 4px; }
+        nav ul { list-style: none; display: flex; gap: 4px; align-items: center; }
+        nav ul li a, nav ul li button.logout-btn {
+            color: #9ca3af; text-decoration: none; font-size: 0.875rem; padding: 8px 12px;
+            border-radius: 6px; transition: var(--transition); font-family: inherit;
+        }
+        nav ul li a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        nav ul li button.logout-btn {
+            background: none; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+        }
+        nav ul li button.logout-btn:hover { color: #fff; border-color: var(--danger); background: rgba(239,68,68,0.1); }
+
         .btn {
-            display: inline-block; padding: 10px 20px;
-            background: #16213e; color: #fff;
-            text-decoration: none; border: none; border-radius: 6px;
-            cursor: pointer; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
+            background: var(--primary-light); color: #fff;
+            text-decoration: none; border: none; border-radius: 8px;
+            cursor: pointer; font-size: 0.875rem; font-weight: 500;
+            transition: var(--transition); white-space: nowrap;
         }
-        .btn:hover { background: #0f3460; }
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-        .btn-success { background: #27ae60; }
-        .btn-success:hover { background: #219a52; }
-        .btn-danger { background: #e74c3c; }
-        .btn-danger:hover { background: #c0392b; }
-        .btn-warning { background: #f39c12; }
-        .btn-warning:hover { background: #d68910; }
-        .btn-outline { background: transparent; border: 2px solid #16213e; color: #16213e; }
-        .btn-outline:hover { background: #16213e; color: #fff; }
-        
-        /* ═══ CARDS (white boxes with shadow) ═══ */
+        .btn:hover { background: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
+        .btn:active { transform: translateY(0); }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-warning { background: var(--warning); }
+        .btn-warning:hover { background: #d97706; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-light); color: var(--primary-light); }
+        .btn-outline:hover { background: var(--primary-light); color: #fff; }
+
         .card {
-            background: #fff; border-radius: 10px; padding: 25px;
-            margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            background: var(--card-bg); border-radius: var(--radius); padding: 24px;
+            margin-bottom: 20px; box-shadow: var(--shadow);
+            transition: var(--transition);
         }
-        .card h3 { margin-bottom: 15px; color: #1a1a2e; }
-        
-        /* ═══ GRID — responsive card grid ═══ */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        
-        /* ═══ STAT CARDS (big numbers on admin dashboard) ═══ */
-        .stat-card { text-align: center; padding: 30px; }
-        .stat-card .number { font-size: 2.5rem; font-weight: bold; color: #16213e; }
-        .stat-card .label { color: #666; font-size: 0.9rem; }
-        
-        /* ═══ FLASH MESSAGES (success/error popups) ═══ */
-        .messages { list-style: none; margin: 15px 0; }
-        .messages li { padding: 12px 20px; border-radius: 6px; margin-bottom: 8px; }
-        .messages .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .messages .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .messages .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .messages .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        
-        /* ═══ FORM STYLES ═══ */
-        form label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        .card:hover { box-shadow: var(--shadow-lg); }
+        .card h3 { margin-bottom: 16px; color: var(--primary); font-size: 1.1rem; }
+        .card h4 { margin-bottom: 12px; color: var(--text); font-size: 1rem; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        .stat-card { text-align: center; padding: 28px 20px; border-radius: var(--radius); }
+        .stat-card .number { font-size: 2.2rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+
+        .messages { list-style: none; margin: 0; }
+        .messages li {
+            padding: 14px 18px; border-radius: 8px; margin-bottom: 10px;
+            font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+            animation: slideIn 0.3s ease;
+        }
+        .messages .success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .messages .error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .messages .warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .messages .info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        form label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85rem; color: var(--text); }
         form input, form select, form textarea {
-            width: 100%; padding: 10px;
-            border: 1px solid #ddd; border-radius: 6px;
-            margin-bottom: 15px; font-size: 0.9rem;
+            width: 100%; padding: 10px 12px;
+            border: 1px solid var(--border); border-radius: 8px;
+            margin-bottom: 14px; font-size: 0.9rem; transition: var(--transition);
+            background: #fafafa;
         }
-        form textarea { min-height: 100px; }
-        
-        /* ═══ TABLES ═══ */
+        form input:focus, form select:focus, form textarea:focus {
+            outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,52,96,0.1); background: #fff;
+        }
+        form textarea { min-height: 100px; resize: vertical; }
+
         table { width: 100%; border-collapse: collapse; }
-        table th, table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        table th { background: #f8f9fa; font-weight: 600; }
-        
-        /* ═══ BADGES (small colored labels like "Completed", "Pending") ═══ */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
-        .badge-success { background: #d4edda; color: #155724; }
-        .badge-warning { background: #fff3cd; color: #856404; }
-        .badge-danger { background: #f8d7da; color: #721c24; }
-        .badge-info { background: #d1ecf1; color: #0c5460; }
-        
-        /* ═══ HERO (landing page banner) ═══ */
-        .hero { text-align: center; padding: 80px 20px; }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 15px; color: #1a1a2e; }
-        .hero p { font-size: 1.1rem; color: #666; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; }
-        
-        /* ═══ FOOTER ═══ */
-        .footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; }
-        
-        /* ═══ UTILITY CLASSES ═══ */
+        table th, table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+        table th { background: #f9fafb; font-weight: 600; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        table tr:hover td { background: #f9fafb; }
+        table tr:last-child td { border-bottom: none; }
+
+        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+
+        .hero { text-align: center; padding: 60px 20px; }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 12px; color: var(--primary); font-weight: 800; letter-spacing: -0.5px; }
+        .hero p { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 28px; max-width: 560px; margin-left: auto; margin-right: auto; }
+
+        .footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.8rem; margin-top: auto; border-top: 1px solid var(--border); }
+
+        .search-bar {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 0.9rem; margin-bottom: 16px; transition: var(--transition);
+            background: #fafafa;
+        }
+        .search-bar:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,52,96,0.1); background: #fff; }
+
+        .toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; max-width: 380px; width: 100%; pointer-events: none; }
+        .toast {
+            padding: 14px 18px; border-radius: 10px; font-size: 0.875rem; font-weight: 500;
+            box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px;
+            animation: toastIn 0.35s ease; pointer-events: auto;
+            backdrop-filter: blur(8px);
+        }
+        .toast-success { background: rgba(16,185,129,0.95); color: #fff; }
+        .toast-error { background: rgba(239,68,68,0.95); color: #fff; }
+        .toast-warning { background: rgba(245,158,11,0.95); color: #fff; }
+        .toast-info { background: rgba(59,130,246,0.95); color: #fff; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+        .empty-state p { font-size: 0.95rem; }
+
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-sm { gap: 6px; }
         .mt-10 { margin-top: 10px; }
         .mt-20 { margin-top: 20px; }
         .mb-10 { margin-bottom: 10px; }
         .mb-20 { margin-bottom: 20px; }
         .text-center { text-align: center; }
-        .flex { display: flex; gap: 10px; align-items: center; }
-        .flex-wrap { flex-wrap: wrap; }
-        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 14px; }
+            nav .container { height: 54px; }
+            .nav-toggle { display: block; }
+            nav ul { display: none; position: absolute; top: 54px; left: 0; right: 0; background: var(--primary); flex-direction: column; padding: 8px 14px 14px; gap: 2px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+            nav ul.open { display: flex; }
+            nav ul li a, nav ul li button.logout-btn { display: block; padding: 10px 12px; width: 100%; text-align: left; }
+            nav ul li button.logout-btn { border: none; }
+            .hero h1 { font-size: 1.6rem; }
+            .hero { padding: 40px 14px; }
+            .grid { grid-template-columns: 1fr; }
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+            .card { padding: 18px; }
+            .stat-card .number { font-size: 1.8rem; }
+            .toast-container { left: 14px; right: 14px; max-width: none; }
+            .btn { padding: 10px 16px; }
+
+            table th, table td { padding: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.4rem; }
+            .flex { flex-wrap: wrap; }
+            .btn-sm { padding: 8px 12px; }
+        }
     </style>
 </head>
 <body>
-    <!-- ═══ NAVIGATION BAR ═══ -->
     <nav>
         <div class="container">
-            <h1><a href="/">EVoting System</a></h1>
-            <ul>
+            <a href="/" class="brand">E<span>Vote</span></a>
+            <button class="nav-toggle" onclick="document.getElementById('navMenu').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+            <ul id="navMenu">
                 {% if user.is_authenticated %}
-                    <!-- Links for logged-in users -->
                     <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
                     {% if user.role == 'admin' %}
-                        <!-- Admin-only links -->
                         <li><a href="{% url 'admin_elections' %}">Elections</a></li>
                         <li><a href="{% url 'admin_candidates' %}">Candidates</a></li>
+                        <li><a href="{% url 'admin_audit_logs' %}">Audit</a></li>
                     {% endif %}
                     {% if user.role == 'candidate' %}
-                        <!-- Candidate-only links -->
-                        <li><a href="{% url 'manage_manifestos' %}">My Manifestos</a></li>
+                        <li><a href="{% url 'manage_manifestos' %}">Manifestos</a></li>
                     {% endif %}
-                    <!-- Links for everyone logged in -->
                     <li><a href="{% url 'results' %}">Results</a></li>
                     <li><a href="{% url 'manifesto_tracking' %}">Tracking</a></li>
                     <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
                     <li>
-                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                        <form action="{% url 'logout' %}" method="post" style="display:inline">
                             {% csrf_token %}
-                            <button type="submit" style="background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.9rem; font-family: inherit; padding: 0; outline: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ccc'">Logout ({{ user.username }})</button>
+                            <button type="submit" class="logout-btn">Logout {{ user.username }}</button>
                         </form>
                     </li>
                 {% else %}
-                    <!-- Links for guests -->
                     <li><a href="{% url 'login' %}">Login</a></li>
                     <li><a href="{% url 'register' %}">Register</a></li>
                 {% endif %}
@@ -158,9 +238,9 @@
         </div>
     </nav>
 
-    <!-- ═══ MAIN CONTENT ═══ -->
-    <div class="container">
-        <!-- Display flash messages (success/error/warning popups) -->
+    <div class="container" style="flex:1">
+        <div id="toastContainer" class="toast-container"></div>
+
         {% if messages %}
             <ul class="messages">
                 {% for message in messages %}
@@ -169,13 +249,21 @@
             </ul>
         {% endif %}
 
-        <!-- Each page fills this block with its own content -->
         {% block content %}{% endblock %}
     </div>
 
-    <!-- ═══ FOOTER ═══ -->
     <div class="footer">
         <p>EVoting System with Manifesto Tracking &copy; {% now "Y" %}</p>
     </div>
+
+    <script>
+        document.querySelectorAll('.messages li').forEach(el => {
+            setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.4s'; setTimeout(() => el.remove(), 400); }, 4000);
+        });
+        document.addEventListener('click', function(e) {
+            var menu = document.getElementById('navMenu');
+            if (!e.target.closest('nav')) { menu.classList.remove('open'); }
+        });
+    </script>
 </body>
 </html>

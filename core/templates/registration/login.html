@@ -6,15 +6,8 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn">Login</button>
-        <p class="mt-10">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+        <button type="submit" class="btn w-full" style="justify-content:center;">Login</button>
+        <p class="mt-10" style="text-align:center; font-size:0.9rem;">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
     </form>
 </div>
-
-<style>
-    form p { margin-bottom: 15px; }
-    form p label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-    form p input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
-    .errorlist { color: #dc3545; font-size: 0.85rem; list-style: none; }
-</style>
 {% endblock %}
