@@ -403,9 +403,22 @@ def admin_elections(request):
     if request.method == 'POST':
         form = ElectionForm(request.POST)
         if form.is_valid():
-            form.save()
-            log_audit(request.user, 'Election created', request=request)
-            messages.success(request, 'Election created!')
+            election = form.save()
+            clone_id = request.POST.get('clone_from')
+            if clone_id:
+                source = get_object_or_404(Election, id=clone_id)
+                for pos in source.positions.all():
+                    Position.objects.create(
+                        election=election,
+                        title=pos.title,
+                        description=pos.description,
+                        order=pos.order,
+                    )
+                log_audit(request.user, f'Election created (cloned {source.id} positions)', request=request)
+                messages.success(request, f'Election created with positions from "{source.title}"!')
+            else:
+                log_audit(request.user, 'Election created', request=request)
+                messages.success(request, 'Election created!')
             return redirect('admin_elections')
     else:
         form = ElectionForm()

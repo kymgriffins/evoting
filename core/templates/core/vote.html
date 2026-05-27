@@ -5,12 +5,16 @@
 <h2 class="mb-10">{{ election.title }}</h2>
 <p class="mb-20" style="color:var(--text-muted);">{{ election.description }}</p>
 
-<form method="post">
+<form method="post" id="voteForm">
     {% csrf_token %}
+    <div id="positionsContainer">
     {% for pos in positions %}
-        <div class="card">
+        <div class="card position-card" data-position="{{ pos.id }}">
             <div class="flex justify-between mb-10">
-                <h3>{{ pos.title }}</h3>
+                <div class="flex" style="gap:8px;">
+                    <span class="position-step">Step {{ forloop.counter }}</span>
+                    <h3>{{ pos.title }}</h3>
+                </div>
                 {% if pos.has_voted %}
                     <span class="badge badge-info">Voted</span>
                 {% endif %}
@@ -21,27 +25,155 @@
                 <p class="badge badge-info" style="padding:10px 16px; border-radius:8px;">You have already voted for this position.</p>
             {% elif pos.candidate_list %}
                 {% for c in pos.candidate_list %}
-                    <label class="vote-option" style="display: block; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: var(--transition);">
-                        <input type="radio" name="position_{{ pos.id }}" value="{{ c.id }}" required style="accent-color:var(--primary); margin-right:10px;">
-                        <strong style="font-size:0.95rem;">{{ c.user.get_full_name|default:c.user.username }}</strong>
-                        {% if c.bio %}<br><small style="color:var(--text-muted); margin-top:4px; display:inline-block;">{{ c.bio|truncatewords:25 }}</small>{% endif %}
+                    {% with name=c.user.get_full_name|default:c.user.username %}
+                    <label class="vote-option">
+                        <input type="radio" name="position_{{ pos.id }}" value="{{ c.id }}" required onchange="updateReview()">
+                        <div class="vote-avatar">{{ name|first|upper }}</div>
+                        <div class="vote-info">
+                            <strong>{{ name }}</strong>
+                            {% if c.bio %}<small>{{ c.bio|truncatewords:20 }}</small>{% endif %}
+                        </div>
+                        <div class="vote-manifesto">
+                            <a href="{% url 'manifesto_tracking_detail' c.election.id %}" class="btn btn-sm btn-outline" onclick="event.stopPropagation()" style="font-size:0.75rem; padding:4px 10px;">View Promises</a>
+                        </div>
+                        <div class="vote-check">&#10003;</div>
                     </label>
+                    {% endwith %}
                 {% endfor %}
             {% else %}
                 <p style="color:var(--text-muted);">No approved candidates for this position.</p>
             {% endif %}
         </div>
     {% endfor %}
+    </div>
 
-    <div class="flex" style="margin-top:10px;">
-        <button type="submit" class="btn btn-success" onclick="return confirm('Cast your votes? This cannot be undone.')">Submit My Votes</button>
-        <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+    <div class="card" style="border:2px solid var(--primary-light); background:#f8f9ff; text-align:center;">
+        <div class="flex justify-between flex-wrap" style="gap:12px;">
+            <div style="text-align:left;">
+                <div style="font-size:0.85rem; color:var(--text-muted);">Your selections</div>
+                <div id="selectionSummary" style="font-size:0.9rem; font-weight:600; margin-top:4px;">No selections yet</div>
+            </div>
+            <div class="flex" style="gap:10px;">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+                <button type="button" class="btn btn-success" onclick="showReview()" id="reviewBtn" disabled>Review & Cast Vote</button>
+            </div>
+        </div>
     </div>
 </form>
 
+<div id="reviewModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:28px; border-radius:14px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:var(--shadow-lg);">
+        <h3 style="margin-bottom:16px;">Review Your Vote</h3>
+        <div id="reviewContent"></div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin:14px 0;">This action cannot be undone once submitted.</p>
+        <div class="flex" style="gap:10px;">
+            <button type="button" class="btn btn-success" onclick="submitVote()">Confirm & Cast Votes</button>
+            <button type="button" class="btn btn-outline" onclick="closeReview()">Go Back</button>
+        </div>
+    </div>
+</div>
+
 <style>
-    .vote-option:hover { border-color: var(--primary-light); background: #f8f9ff; }
-    .vote-option:has(input:checked) { border-color: var(--primary-light); background: #eef2ff; }
-    .vote-option input:checked + strong { color: var(--primary); }
+    .position-step {
+        background: var(--primary-light); color: #fff; font-size:0.7rem; font-weight:700;
+        padding:2px 10px; border-radius:20px; letter-spacing:0.5px;
+    }
+    .vote-option {
+        display:flex; align-items:center; gap:14px;
+        padding:14px 16px; border:2px solid var(--border); border-radius:12px;
+        margin-bottom:8px; cursor:pointer; transition:var(--transition);
+    }
+    .vote-option:hover { border-color: var(--accent); background:#f8f9ff; transform:translateX(3px); }
+    .vote-option:has(input:checked) { border-color: var(--primary); background:#eef2ff; box-shadow:0 0 0 3px rgba(22,33,62,0.08); }
+    .vote-option input { display:none; }
+    .vote-avatar {
+        width:44px; height:44px; border-radius:50%;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color:#fff; display:flex; align-items:center; justify-content:center;
+        font-weight:700; font-size:0.9rem; flex-shrink:0;
+    }
+    .vote-option:has(input:checked) .vote-avatar { background: linear-gradient(135deg, var(--success), #34d399); }
+    .vote-info { flex:1; min-width:0; }
+    .vote-info strong { display:block; font-size:0.95rem; }
+    .vote-info small { color:var(--text-muted); font-size:0.8rem; display:block; margin-top:2px; }
+    .vote-manifesto { flex-shrink:0; }
+    .vote-check {
+        width:26px; height:26px; border-radius:50%; border:2px solid var(--border);
+        display:flex; align-items:center; justify-content:center;
+        font-size:0.8rem; color:transparent; flex-shrink:0; transition:var(--transition);
+    }
+    .vote-option:has(input:checked) .vote-check { background:var(--success); border-color:var(--success); color:#fff; }
+
+    @media (max-width:600px) {
+        .vote-option { flex-wrap:wrap; gap:8px; }
+        .vote-manifesto { width:100%; margin-left:58px; }
+        .vote-check { margin-left:auto; }
+    }
 </style>
+
+<script>
+var selections = {};
+
+document.querySelectorAll('.position-card input[type=radio]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        var posId = this.name.split('_')[1];
+        var label = this.closest('.vote-option');
+        var name = label.querySelector('.vote-info strong').textContent;
+        var posTitle = this.closest('.position-card').querySelector('h3').textContent;
+        selections[posId] = { name: name, posTitle: posTitle };
+        updateReview();
+    });
+});
+
+function updateReview() {
+    var count = Object.keys(selections).length;
+    var total = document.querySelectorAll('.position-card').length;
+    var summary = document.getElementById('selectionSummary');
+    var btn = document.getElementById('reviewBtn');
+
+    if (count === 0) {
+        summary.textContent = 'No selections yet';
+        btn.disabled = true;
+    } else if (count < total) {
+        summary.textContent = count + ' of ' + total + ' positions selected';
+        btn.disabled = false;
+    } else {
+        summary.textContent = 'All ' + total + ' positions selected';
+        btn.disabled = false;
+    }
+}
+
+function showReview() {
+    var html = '';
+    var posCards = document.querySelectorAll('.position-card');
+    posCards.forEach(function(card) {
+        var posTitle = card.querySelector('h3').textContent;
+        var checked = card.querySelector('input:checked');
+        if (checked) {
+            var label = checked.closest('.vote-option');
+            var name = label.querySelector('.vote-info strong').textContent;
+            html += '<div style="border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:8px;">' +
+                    '<div style="font-size:0.8rem; color:var(--text-muted);">' + posTitle + '</div>' +
+                    '<div style="font-weight:600; margin-top:2px;">' + name + '</div>' +
+                    '</div>';
+        }
+    });
+    document.getElementById('reviewContent').innerHTML = html;
+    document.getElementById('reviewModal').style.display = 'flex';
+}
+
+function closeReview() {
+    document.getElementById('reviewModal').style.display = 'none';
+}
+
+function submitVote() {
+    document.getElementById('voteForm').submit();
+}
+
+document.getElementById('reviewModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReview();
+});
+
+updateReview();
+</script>
 {% endblock %}

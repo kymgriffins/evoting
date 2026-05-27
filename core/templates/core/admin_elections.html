@@ -5,6 +5,9 @@
 
 <div class="card">
     <h3>{% if editing %}Edit Election{% else %}Create New Election{% endif %}</h3>
+    {% if not editing %}
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">Create a new election or clone positions from a previous one.</p>
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
@@ -21,26 +24,42 @@
     <input type="text" class="search-bar" id="electionSearch" placeholder="Search elections..." oninput="filterElections()">
     <div style="overflow-x:auto;">
         <table id="electionTable">
-            <tr><th>Title</th><th>Active</th><th>Start</th><th>End</th><th>Actions</th></tr>
+            <tr><th>Title</th><th>Active</th><th>Start</th><th>End</th><th>Positions</th><th>Actions</th></tr>
             {% for e in elections %}
                 <tr class="election-row">
                     <td><strong>{{ e.title }}</strong></td>
                     <td>{% if e.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-warning">Inactive</span>{% endif %}</td>
                     <td style="white-space:nowrap; font-size:0.8rem;">{{ e.start_date|date:"M d, Y H:i" }}</td>
                     <td style="white-space:nowrap; font-size:0.8rem;">{{ e.end_date|date:"M d, Y H:i" }}</td>
+                    <td style="text-align:center;">{{ e.positions.count }}</td>
                     <td>
                         <div class="flex gap-sm">
                             <a href="{% url 'admin_positions' e.id %}" class="btn btn-sm">Positions</a>
                             <a href="{% url 'admin_election_edit' e.id %}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{% url 'admin_elections' %}?clone={{ e.id }}" class="btn btn-sm btn-outline" style="font-size:0.75rem;">Clone</a>
                         </div>
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5" class="empty-state">No elections yet.</td></tr>
+                <tr><td colspan="6" class="empty-state">No elections yet.</td></tr>
             {% endfor %}
         </table>
     </div>
 </div>
+
+{% if request.GET.clone %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var cloneSelect = document.getElementById('id_clone_from');
+    if (cloneSelect) {
+        cloneSelect.value = '{{ request.GET.clone }}';
+        cloneSelect.style.border = '2px solid var(--success)';
+        cloneSelect.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+});
+</script>
+{% endif %}
+
 <script>
 function filterElections() {
     var q = document.getElementById('electionSearch').value.toLowerCase();

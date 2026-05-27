@@ -60,6 +60,13 @@ class ManifestoRatingForm(forms.ModelForm):
 class ElectionForm(forms.ModelForm):
     """Admin form to create/edit elections.
     Uses datetime-local input for start/end date picking."""
+    clone_from = forms.ModelChoiceField(
+        queryset=Election.objects.all(),
+        required=False,
+        label='Clone positions from',
+        help_text='Copy positions from a previous election',
+    )
+
     class Meta:
         model = Election
         fields = ['title', 'description', 'start_date', 'end_date', 'is_active']
@@ -67,6 +74,12 @@ class ElectionForm(forms.ModelForm):
             'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['clone_from'].queryset = Election.objects.all().order_by('-created_at')
+        if self.instance.pk:
+            self.fields.pop('clone_from')
 
 
 class PositionForm(forms.ModelForm):
