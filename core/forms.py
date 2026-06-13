@@ -5,7 +5,7 @@
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm  # Built-in Django registration form
-from .models import User, Candidate, Manifesto, ManifestoUpdate, ManifestoRating, Election, Position
+from .models import User, Candidate, Manifesto, ManifestoUpdate, ManifestoRating, Election, Position, Category
 
 
 class UserRegisterForm(UserCreationForm):
@@ -31,10 +31,17 @@ class CandidateForm(forms.ModelForm):
 
 class ManifestoForm(forms.ModelForm):
     """Form to create/edit a manifesto (campaign promise).
-    Title, description, and category are required."""
+    Title, description, and categories are required."""
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label='Categories',
+    )
+
     class Meta:
         model = Manifesto
-        fields = ['title', 'description', 'category']
+        fields = ['title', 'description', 'categories']
 
 
 class ManifestoUpdateForm(forms.ModelForm):

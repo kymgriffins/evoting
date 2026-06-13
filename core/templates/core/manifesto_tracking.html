@@ -47,7 +47,13 @@
                             {% for md in cd.manifestos %}
                                 <tr class="manifesto-track-row">
                                     <td><strong>{{ md.manifesto.title }}</strong></td>
-                                    <td><span class="badge badge-info">{{ md.manifesto.get_category_display }}</span></td>
+                                    <td>
+                                        {% for cat in md.manifesto.categories.all %}
+                                            <span class="badge badge-info">{{ cat.name }}</span>
+                                        {% empty %}
+                                            <span class="badge badge-warning">Uncategorized</span>
+                                        {% endfor %}
+                                    </td>
                                     <td>
                                         <span class="badge 
                                             {% if md.latest_status == 'Completed' %}badge-success

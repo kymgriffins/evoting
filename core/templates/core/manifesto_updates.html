@@ -5,7 +5,14 @@
     <div class="flex justify-between flex-wrap">
         <div>
             <h3>{{ manifesto.title }}</h3>
-            <p style="color:var(--text-muted); font-size:0.9rem;"><strong>Category:</strong> {{ manifesto.get_category_display }}</p>
+            <p style="color:var(--text-muted); font-size:0.9rem;">
+                <strong>Categories:</strong>
+                {% for cat in manifesto.categories.all %}
+                    <span class="badge badge-info">{{ cat.name }}</span>
+                {% empty %}
+                    <span class="badge badge-warning">Uncategorized</span>
+                {% endfor %}
+            </p>
             <p style="margin-top:8px;">{{ manifesto.description }}</p>
             <p style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">Created {{ manifesto.created_at|date:"M d, Y" }}</p>
         </div>

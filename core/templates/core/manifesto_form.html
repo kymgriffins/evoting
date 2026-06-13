@@ -6,11 +6,44 @@
     <p class="mb-20" style="color:var(--text-muted); font-size:0.9rem;">Once created, manifestos are permanent. You can only add progress updates later.</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% if form.non_field_errors %}
+            <div style="color:var(--danger); margin-bottom:10px;">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <label for="id_title">Title:</label>
+        <input type="text" name="title" id="id_title" maxlength="200" required>
+
+        <label for="id_description">Description:</label>
+        <textarea name="description" id="id_description" rows="5" required></textarea>
+
+        <label style="display:block; margin-bottom:8px; font-weight:600;">Categories (select one or more):</label>
+        <div style="margin-bottom:14px;">
+            {% for value, label in form.categories.field.choices %}
+                <label style="display:inline-flex; align-items:center; gap:6px; margin-right:14px; margin-bottom:6px; cursor:pointer; padding:6px 12px; border:1px solid var(--border); border-radius:8px; transition:var(--transition);">
+                    <input type="checkbox" name="categories" value="{{ value }}" style="width:auto; margin:0;">
+                    <span style="font-size:0.85rem;">{{ label }}</span>
+                </label>
+            {% endfor %}
+        </div>
+
         <div class="flex">
             <button type="submit" class="btn btn-success">Create Manifesto</button>
             <a href="{% url 'manage_manifestos' %}" class="btn btn-outline">Cancel</a>
         </div>
     </form>
 </div>
+
+<script>
+    document.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            var parent = this.closest('label');
+            if (this.checked) {
+                parent.style.borderColor = 'var(--primary)';
+                parent.style.background = '#eef2ff';
+            } else {
+                parent.style.borderColor = 'var(--border)';
+                parent.style.background = '';
+            }
+        });
+    });
+</script>
 {% endblock %}

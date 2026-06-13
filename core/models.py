@@ -66,19 +66,27 @@ class Position(models.Model):
 # CANDIDATE — A person running for a position in an election
 # ──────────────────────────────────────────────────────────────
 # OneToOneField → each User can be a candidate only once
-# is_approved → admin must approve before appearing on ballot
+# approval_status → pending / approved / rejected (admin controls this)
+# is_approved → kept for backward compatibility, derived from approval_status
 # 
 # PROPERTIES (calculated, not stored in DB):
 #   success_rate  → % of manifestos marked completed
 #   avg_rating    → average star rating across all their manifestos
 #   total_ratings → number of ratings received
 class Candidate(models.Model):
+    APPROVAL_STATUS = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidate_profile')
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, related_name='candidates')
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='candidates')
     bio = models.TextField(blank=True)
     photo = models.URLField(blank=True, help_text='URL to candidate photo')
     is_approved = models.BooleanField(default=False)
+    approval_status = models.CharField(max_length=20, choices=APPROVAL_STATUS, default='pending')
+    rejection_reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -110,27 +118,36 @@ class Candidate(models.Model):
 
 
 # ──────────────────────────────────────────────────────────────
+# CATEGORY — Dynamic category for manifestos
+# ──────────────────────────────────────────────────────────────
+# Admin can create/edit categories. Each manifesto can have
+# one or more categories assigned to it.
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+# ──────────────────────────────────────────────────────────────
 # MANIFESTO — A single campaign promise made by a candidate
 # ──────────────────────────────────────────────────────────────
 # Each candidate can have multiple manifestos across categories
-# Categories: education, healthcare, infrastructure, student_welfare, other
+# Categories are now dynamic via the Category model (M2M)
 class Manifesto(models.Model):
-    CATEGORY_CHOICES = (
-        ('education', 'Education'),
-        ('healthcare', 'Healthcare'),
-        ('infrastructure', 'Infrastructure'),
-        ('student_welfare', 'Student Welfare'),
-        ('other', 'Other'),
-    )
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='manifestos')
     title = models.CharField(max_length=200)
     description = models.TextField()
-    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='other')
+    categories = models.ManyToManyField(Category, related_name='manifestos', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['category', '-created_at']
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title

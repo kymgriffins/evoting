@@ -55,6 +55,8 @@ urlpatterns = [
          name='admin_elections'),
     path('admin/elections/<int:pk>/edit/', views.admin_election_edit, # Edit election
          name='admin_election_edit'),
+    path('admin/elections/<int:pk>/activate/', views.admin_election_activate, # Activate election
+         name='admin_election_activate'),
     path('admin/elections/<int:election_id>/positions/',           # Manage positions
          views.admin_positions, name='admin_positions'),
     path('admin/candidates/', views.admin_candidates,              # Approve/reject candidates

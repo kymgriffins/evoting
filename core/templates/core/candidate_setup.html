@@ -1,16 +1,29 @@
 {% extends "core/base.html" %}
-{% block title %}Candidate Setup{% endblock %}
+{% block title %}Request Vetting{% endblock %}
 {% block content %}
-<div class="card" style="max-width: 600px; margin: 40px auto;">
-    <h3>Complete Your Candidate Profile</h3>
-    <p class="mb-20" style="color:var(--text-muted);">You registered as a candidate. Complete your profile to appear in the election.</p>
+<div class="card" style="max-width: 650px; margin: 40px auto;">
+    <div style="background:#eef2ff; border:1px solid #bfdbfe; border-radius:10px; padding:16px; margin-bottom:20px;">
+        <div style="font-size:1.5rem; margin-bottom:4px;">&#128220;</div>
+        <h4 style="margin-bottom:4px;">Vetting Request Process</h4>
+        <ol style="margin:8px 0 0 20px; font-size:0.85rem; color:var(--text-muted);">
+            <li><strong>Select election &amp; position</strong> you want to contest</li>
+            <li><strong>Submit your request</strong> — admin will review your profile</li>
+            <li>Wait for <strong>admin approval</strong>. You'll be notified on the dashboard.</li>
+            <li>Once approved, you can <strong>add manifesto items</strong> and campaign.</li>
+        </ol>
+    </div>
+
+    <h3>Request to Be Vetted</h3>
+    <p class="mb-20" style="color:var(--text-muted);">Choose the election you want to participate in and submit for admin review.</p>
     <form method="post">
         {% csrf_token %}
         <label for="electionSelect">Select Election:</label>
         <select name="election" id="electionSelect" required>
             <option value="">-- Choose Election --</option>
             {% for e in elections %}
-                <option value="{{ e.id }}">{{ e.title }} (ends {{ e.end_date|date:"M d" }})</option>
+                <option value="{{ e.id }}">
+                    {{ e.title }}{% if e.is_active %} (Active){% endif %}
+                </option>
             {% endfor %}
         </select>
 
@@ -28,7 +41,7 @@
         <label for="id_photo">Photo URL (optional):</label>
         <input type="url" name="photo" id="id_photo" placeholder="https://example.com/your-photo.jpg">
 
-        <button type="submit" class="btn">Submit for Approval</button>
+        <button type="submit" class="btn" style="background:var(--warning);">Submit Vetting Request</button>
     </form>
 
     <script>

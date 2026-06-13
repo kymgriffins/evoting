@@ -18,6 +18,7 @@ router.register(r'manifestos', views.ManifestoViewSet)
 router.register(r'votes', views.VoteViewSet, basename='vote')
 router.register(r'updates', views.ManifestoUpdateViewSet)
 router.register(r'ratings', views.ManifestoRatingViewSet)
+router.register(r'categories', views.CategoryViewSet)
 router.register(r'audit-logs', views.AuditLogViewSet)
 
 # ── Custom endpoints (not CRUD) ──────────────────────────────

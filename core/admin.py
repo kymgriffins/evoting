@@ -2,7 +2,7 @@
 # Controls how models appear when you login as a superuser.
 
 from django.contrib import admin
-from .models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog
+from .models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog, Category
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -44,3 +44,4 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(ManifestoUpdate)
 admin.site.register(ManifestoRating)
 admin.site.register(AuditLog)
+admin.site.register(Category)

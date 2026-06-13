@@ -1,12 +1,12 @@
 {% extends "core/base.html" %}
-{% block title %}Leaderboard - Candidate Performance{% endblock %}
+{% block title %}Leaderboard - Candidate Ratings{% endblock %}
 {% block content %}
 
 <div class="card">
     <div class="flex justify-between flex-wrap mb-10">
         <div>
-            <h3>Candidate Performance Leaderboard</h3>
-            <p style="color:var(--text-muted); font-size:0.9rem;">Ranked by manifesto success rate (fulfilled promises / total promises).</p>
+            <h3>Candidate Ratings Leaderboard</h3>
+            <p style="color:var(--text-muted); font-size:0.9rem;">Ranked by average star rating from voter feedback.</p>
         </div>
     </div>
 
@@ -17,36 +17,17 @@
                     <th>Rank</th>
                     <th>Candidate</th>
                     <th>Position</th>
-                    <th>Success Rate</th>
                     <th>Avg Rating</th>
                     <th>Ratings</th>
-                    <th>Votes</th>
                     <th>Details</th>
                 </tr>
                 {% for r in ranking %}
                     <tr style="{% if r.rank == 1 %}background:#fffbeb;{% elif r.rank == 2 %}background:#f8fafc;{% elif r.rank == 3 %}background:#fff7ed;{% endif %}">
                         <td style="font-size:1.2rem; font-weight:bold; text-align:center;">
-                            {% if r.rank == 1 %}🥇{% elif r.rank == 2 %}🥈{% elif r.rank == 3 %}🥉{% else %}{{ r.rank }}{% endif %}
+                            {% if r.rank == 1 %}🏆{% elif r.rank == 2 %}🥈{% elif r.rank == 3 %}🥉{% else %}{{ r.rank }}{% endif %}
                         </td>
                         <td><strong>{{ r.candidate.user.get_full_name|default:r.candidate.user.username }}</strong></td>
                         <td><span class="badge badge-info">{{ r.candidate.position.title }}</span></td>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-weight:700; 
-                                    {% if r.success_rate >= 70 %}color:var(--success);
-                                    {% elif r.success_rate >= 40 %}color:var(--warning);
-                                    {% else %}color:var(--danger);{% endif %}">
-                                    {{ r.success_rate }}%
-                                </span>
-                                <div style="background:var(--border); width:60px; height:8px; border-radius:4px; overflow:hidden;">
-                                    <div style="height:100%; width:{{ r.success_rate }}%; 
-                                        {% if r.success_rate >= 70 %}background:var(--success);
-                                        {% elif r.success_rate >= 40 %}background:var(--warning);
-                                        {% else %}background:var(--danger);{% endif %}">
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
                         <td style="text-align:center;">
                             {% if r.avg_rating > 0 %}
                                 <span style="font-size:1rem;">
@@ -60,7 +41,6 @@
                             {% endif %}
                         </td>
                         <td style="text-align:center;">{{ r.rating_count }}</td>
-                        <td style="text-align:center;">{{ r.total_votes }}</td>
                         <td>
                             <a href="{% url 'manifesto_tracking_detail' r.candidate.election.id %}" class="btn btn-sm">View</a>
                         </td>
@@ -77,13 +57,11 @@
                     </div>
                     <h4 style="font-size:0.95rem;">{{ r.candidate.user.get_full_name|default:r.candidate.user.username }}</h4>
                     <p style="color:var(--text-muted); font-size:0.8rem;">{{ r.candidate.position.title }}</p>
-                    <div style="font-size:1.4rem; font-weight:800; color:var(--primary); margin:8px 0;">{{ r.success_rate }}%</div>
-                    <div style="background:var(--border); height:10px; border-radius:5px; overflow:hidden;">
-                        <div style="height:100%; width:{{ r.success_rate }}%; background: linear-gradient(90deg, var(--success), #34d399);"></div>
+                    <div style="font-size:1.4rem; font-weight:800; color:var(--primary); margin:8px 0;">
+                        {% if r.avg_rating > 0 %}⭐ {{ r.avg_rating }}/5{% else %}No ratings{% endif %}
                     </div>
                     <p style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">
-                        {{ r.completed_manifestos }}/{{ r.total_manifestos }} fulfilled
-                        {% if r.avg_rating > 0 %} &middot; ⭐ {{ r.avg_rating }}/5 ({{ r.rating_count }}){% endif %}
+                        {{ r.rating_count }} rating{{ r.rating_count|pluralize }}
                     </p>
                 </div>
             {% endfor %}
@@ -91,7 +69,7 @@
     {% else %}
         <div class="empty-state">
             <div class="icon">&#127942;</div>
-            <p>No candidates with manifestos yet.</p>
+            <p>No candidates with ratings yet.</p>
         </div>
     {% endif %}
 </div>
@@ -117,7 +95,7 @@
         <div style="text-align:center; padding:12px;">
             <div style="font-size:1.8rem;">&#128202;</div>
             <h4 style="font-size:0.9rem; margin-top:4px;">Leaderboard</h4>
-            <p style="font-size:0.8rem; color:var(--text-muted);">Ranked by percentage of promises fulfilled.</p>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Ranked by average voter rating.</p>
         </div>
     </div>
 </div>

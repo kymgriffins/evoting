@@ -3,7 +3,7 @@
 # DRF (Django REST Framework) handles JSON serialization automatically.
 
 from rest_framework import serializers
-from .models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog
+from .models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog, Category
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,8 +45,17 @@ class CandidateSerializer(serializers.ModelSerializer):
         return obj.votes.count()
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    """API representation of a Category"""
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
 class ManifestoSerializer(serializers.ModelSerializer):
     """API representation of a Manifesto"""
+    categories_detail = CategorySerializer(source='categories', many=True, read_only=True)
+
     class Meta:
         model = Manifesto
         fields = '__all__'

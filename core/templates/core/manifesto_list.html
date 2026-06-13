@@ -3,45 +3,56 @@
 {% block content %}
 <div class="card">
     <div class="flex justify-between flex-wrap">
-        <h3>My Manifesto Items</h3>
+        <h3>
+            My Manifesto Items
+            <span class="collapse-toggle" onclick="toggleCollapse(this)">&#9660;</span>
+        </h3>
         <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
     </div>
     <input type="text" class="search-bar" id="manifestoSearch" placeholder="Search manifestos..." oninput="filterManifestos()">
-    {% if manifestos %}
-        <div style="overflow-x:auto;">
-            <table id="manifestoTable">
-                <tr><th>Title</th><th>Category</th><th>Created</th><th>Status</th><th>Actions</th></tr>
-                {% for m in manifestos %}
-                    {% with latest=m.updates.first %}
-                    <tr class="manifesto-row">
-                        <td><strong>{{ m.title }}</strong></td>
-                        <td><span class="badge badge-info">{{ m.get_category_display }}</span></td>
-                        <td>{{ m.created_at|date:"M d, Y" }}</td>
-                        <td>
-                            {% if latest %}
-                                <span class="badge 
-                                    {% if latest.status == 'completed' %}badge-success
-                                    {% elif latest.status == 'in_progress' %}badge-info
-                                    {% elif latest.status == 'delayed' %}badge-danger
-                                    {% else %}badge-warning{% endif %}">
-                                    {{ latest.get_status_display }}
-                                </span>
-                            {% else %}
-                                <span class="badge badge-warning">No updates</span>
-                            {% endif %}
-                        </td>
-                        <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
-                    </tr>
-                    {% endwith %}
-                {% endfor %}
-            </table>
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="icon">&#128221;</div>
-            <p>No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
-        </div>
-    {% endif %}
+    <div class="collapse-content">
+        {% if manifestos %}
+            <div style="overflow-x:auto;">
+                <table id="manifestoTable">
+                    <tr><th>Title</th><th>Categories</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+                    {% for m in manifestos %}
+                        {% with latest=m.updates.first %}
+                        <tr class="manifesto-row">
+                            <td><strong>{{ m.title }}</strong></td>
+                            <td>
+                                {% for cat in m.categories.all %}
+                                    <span class="badge badge-info">{{ cat.name }}</span>
+                                {% empty %}
+                                    <span class="badge badge-warning">Uncategorized</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ m.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if latest %}
+                                    <span class="badge 
+                                        {% if latest.status == 'completed' %}badge-success
+                                        {% elif latest.status == 'in_progress' %}badge-info
+                                        {% elif latest.status == 'delayed' %}badge-danger
+                                        {% else %}badge-warning{% endif %}">
+                                        {{ latest.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-warning">No updates</span>
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
+                        </tr>
+                        {% endwith %}
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="icon">&#128221;</div>
+                <p>No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
+            </div>
+        {% endif %}
+    </div>
 </div>
 <script>
 function filterManifestos() {
@@ -49,6 +60,13 @@ function filterManifestos() {
     document.querySelectorAll('.manifesto-row').forEach(function(row) {
         row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
+}
+function toggleCollapse(el) {
+    var content = el.closest('.card').querySelector('.collapse-content');
+    if (content) {
+        content.style.display = content.style.display === 'none' ? '' : 'none';
+        el.classList.toggle('collapsed');
+    }
 }
 </script>
 {% endblock %}

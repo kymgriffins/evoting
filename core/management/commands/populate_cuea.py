@@ -11,7 +11,7 @@ from django.contrib.auth.hashers import make_password
 from datetime import timedelta
 import random, math
 
-from core.models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog
+from core.models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog, Category
 
 CUEA_SCHOOLS = [
     'School of Science and Technology',
@@ -211,13 +211,20 @@ class Command(BaseCommand):
             pos = positions[idx % len(positions)]
             candidates.append(Candidate(
                 user=u, position=pos, election=election,
-                bio=bio, is_approved=True,
+                bio=bio, is_approved=True, approval_status='approved',
             ))
         Candidate.objects.bulk_create(candidates)
         
         # Re-fetch candidates with database IDs
         candidates = list(Candidate.objects.all())
         self.stdout.write(f'  Candidates: {len(candidates)}')
+
+        # ── Categories ────────────────────────────────────────────
+        self.stdout.write('Creating categories...')
+        category_objs = {}
+        for cat_name in MANIFESTO_TEMPLATES.keys():
+            cat, _ = Category.objects.get_or_create(name=cat_name.title().replace('_', ' '))
+            category_objs[cat_name] = cat
 
         # ── 50+ Manifestos ────────────────────────────────────────
         self.stdout.write('Creating 50 manifestos...')
@@ -230,10 +237,19 @@ class Command(BaseCommand):
                 templates = MANIFESTO_TEMPLATES[cat]
                 title, desc = templates[i % len(templates)]
                 manifestos_batch.append(Manifesto(
-                    candidate=c, title=title, description=desc, category=cat
+                    candidate=c, title=title, description=desc,
                 ))
         Manifesto.objects.bulk_create(manifestos_batch)
         all_manifestos = list(Manifesto.objects.all())
+
+        # Assign categories to manifestos
+        for c in candidates:
+            chosen_cats = random.choices(categories, k=5)
+            candidate_manifs = [m for m in all_manifestos if m.candidate_id == c.id]
+            for i, manifesto in enumerate(candidate_manifs):
+                cat_name = chosen_cats[i % len(chosen_cats)]
+                manifesto.categories.add(category_objs[cat_name])
+
         self.stdout.write(f'  Manifestos: {len(all_manifestos)}')
 
         # ── Votes from 600 voters on past elections ───────────────

@@ -3,14 +3,7 @@
 {% block content %}
 <h2 class="mb-20">Dashboard</h2>
 
-{% comment %}
-╔══════════════════════════════════════════════════════════════╗
-║  ADMIN DASHBOARD                                           ║
-║  Shows: system stats, election history, voter turnout      ║
-╚══════════════════════════════════════════════════════════════╝
-{% endcomment %}
 {% if section == 'admin' %}
-    <!-- Compact stat cards row -->
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
         <div class="card" style="padding:14px; text-align:center;">
             <div style="font-size:1.2rem; font-weight:700; color:var(--primary);">{{ total_voters }}</div>
@@ -42,7 +35,6 @@
         </div>
     </div>
 
-    <!-- Admin action buttons -->
     <div class="flex flex-wrap" style="gap: 10px; margin-top: 10px;">
         <a href="{% url 'admin_elections' %}" class="btn">Manage Elections</a>
         <a href="{% url 'admin_candidates' %}" class="btn">Manage Candidates</a>
@@ -51,150 +43,168 @@
         <a href="{% url 'manifesto_tracking' %}" class="btn btn-outline">Tracking Dashboard</a>
     </div>
 
-    {% comment %}
-    Election History Table — shows every election with stats
-    {% endcomment %}
     {% if election_stats %}
         <div class="card mt-20">
-            <h3>Election History & Stats</h3>
-            <table>
-                <tr>
-                    <th>Election</th>
-                    <th>Period</th>
-                    <th>Status</th>
-                    <th>Candidates</th>
-                    <th>Votes</th>
-                    <th>Turnout</th>
-                </tr>
-                {% for es in election_stats %}
+            <h3>
+                Election History &amp; Stats
+                <span class="collapse-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.classList.toggle('collapsed')">&#9660;</span>
+            </h3>
+            <div>
+                <table>
                     <tr>
-                        <td><strong>{{ es.election.title|truncatewords:8 }}</strong></td>
-                        <td style="font-size:0.8rem;">{{ es.election.start_date|date:"M d, Y" }} - {{ es.election.end_date|date:"M d, Y" }}</td>
-                        <td>
-                            {% if es.election.is_active and es.election.end_date >= now %}
-                                <span class="badge badge-success">Active</span>
-                            {% elif es.election.end_date < now %}
-                                <span class="badge badge-info">Past</span>
-                            {% else %}
-                                <span class="badge badge-warning">Upcoming</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-center">{{ es.candidates }}</td>
-                        <td class="text-center">{{ es.votes }}</td>
-                        <td class="text-center">
-                            <span style="font-weight:600; color:{% if es.turnout >= 50 %}var(--success){% else %}var(--warning){% endif %};">{{ es.turnout }}%</span>
-                        </td>
+                        <th>Election</th>
+                        <th>Period</th>
+                        <th>Status</th>
+                        <th>Candidates</th>
+                        <th>Votes</th>
+                        <th>Turnout</th>
                     </tr>
-                {% endfor %}
-            </table>
+                    {% for es in election_stats %}
+                        <tr>
+                            <td><strong>{{ es.election.title|truncatewords:8 }}</strong></td>
+                            <td style="font-size:0.8rem;">{{ es.election.start_date|date:"M d, Y" }} - {{ es.election.end_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if es.election.is_active and es.election.end_date >= now %}
+                                    <span class="badge badge-success">Active</span>
+                                {% elif es.election.end_date < now %}
+                                    <span class="badge badge-info">Past</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Upcoming</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{{ es.candidates }}</td>
+                            <td class="text-center">{{ es.votes }}</td>
+                            <td class="text-center">
+                                <span style="font-weight:600; color:{% if es.turnout >= 50 %}var(--success){% else %}var(--warning){% endif %};">{{ es.turnout }}%</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
         </div>
     {% endif %}
 
-    {% comment %}
-    Active Elections section — quick links to manage positions
-    {% endcomment %}
     {% if active_elections %}
         <div class="card">
-            <h3>Active Elections</h3>
-            {% for e in active_elections %}
-                <div style="border:1px solid #eee; padding:15px; border-radius:6px; margin-bottom:10px;">
-                    <div class="flex justify-between">
-                        <div>
-                            <strong>{{ e.title }}</strong><br>
-                            <small>{{ e.start_date|date:"M d, Y H:i" }} - {{ e.end_date|date:"M d, Y H:i" }}</small>
+            <h3>
+                Active Elections
+                <span class="collapse-toggle" onclick="toggleCollapse(this)">&#9660;</span>
+            </h3>
+            <div class="collapse-content">
+                {% for e in active_elections %}
+                    <div style="border:1px solid #eee; padding:15px; border-radius:6px; margin-bottom:10px;">
+                        <div class="flex justify-between">
+                            <div>
+                                <strong>{{ e.title }}</strong><br>
+                                <small>{{ e.start_date|date:"M d, Y H:i" }} - {{ e.end_date|date:"M d, Y H:i" }}</small>
+                            </div>
+                            <a href="{% url 'admin_positions' e.id %}" class="btn btn-sm">Manage Positions</a>
                         </div>
-                        <a href="{% url 'admin_positions' e.id %}" class="btn btn-sm">Manage Positions</a>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     {% endif %}
 
-{% comment %}
-╔══════════════════════════════════════════════════════════════╗
-║  CANDIDATE DASHBOARD                                       ║
-║  Shows: their profile, manifestos with latest status        ║
-╚══════════════════════════════════════════════════════════════╝
-{% endcomment %}
 {% elif section == 'candidate' %}
-    <!-- Candidate profile card with approval status badge -->
     <div class="card">
         <div class="flex justify-between">
             <h3>My Candidate Profile</h3>
-            <span class="badge {% if candidate.is_approved %}badge-success{% else %}badge-warning{% endif %}">
-                {{ candidate.is_approved|yesno:"Approved,Pending Approval" }}
+            <span class="badge {% if candidate.approval_status == 'approved' %}badge-success{% elif candidate.approval_status == 'pending' %}badge-warning{% else %}badge-danger{% endif %}">
+                {{ candidate.get_approval_status_display }}
             </span>
         </div>
         <p><strong>Position:</strong> {{ candidate.position }}</p>
         <p><strong>Election:</strong> {{ candidate.election }}</p>
         <p><strong>Bio:</strong> {{ candidate.bio|default:"No bio yet" }}</p>
-    </div>
-
-    <!-- Manifesto list with latest status and action buttons -->
-    <div class="card">
-        <div class="flex justify-between mb-10 flex-wrap">
-            <h3>My Manifestos ({{ manifestos|length }})</h3>
-            <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
-        </div>
-        {% if manifestos %}
-            <div style="overflow-x:auto;">
-                <table>
-                    <tr><th>Title</th><th>Category</th><th>Latest Status</th><th>Actions</th></tr>
-                    {% for m in manifestos %}
-                        {% with latest=m.updates.first %}
-                        <tr>
-                            <td><strong>{{ m.title }}</strong></td>
-                            <td><span class="badge badge-info">{{ m.get_category_display }}</span></td>
-                            <td>
-                                {% if latest %}
-                                    <span class="badge 
-                                        {% if latest.status == 'completed' %}badge-success
-                                        {% elif latest.status == 'in_progress' %}badge-info
-                                        {% elif latest.status == 'delayed' %}badge-danger
-                                        {% else %}badge-warning{% endif %}">
-                                        {{ latest.get_status_display }}
-                                    </span>
-                                {% else %}
-                                    <span class="badge badge-warning">No updates</span>
-                                {% endif %}
-                            </td>
-                            <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
-                        </tr>
-                        {% endwith %}
-                    {% endfor %}
-                </table>
+        {% if candidate.approval_status == 'pending' %}
+            <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px; margin-top:10px;">
+                <strong style="color:var(--warning);">&#9888; Pending Review</strong>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Your vetting request is awaiting admin approval. You'll be able to add manifestos once approved.</p>
             </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="icon">&#128221;</div>
-                <p>No manifestos yet. <a href="{% url 'manifesto_create' %}">Create your first manifesto item.</a></p>
+        {% elif candidate.approval_status == 'rejected' %}
+            <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; margin-top:10px;">
+                <strong style="color:var(--danger);">&#10060; Request Rejected</strong>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Your vetting request was not approved. You can <a href="{% url 'candidate_setup' %}">submit a new request</a>.</p>
             </div>
         {% endif %}
     </div>
 
-{% comment %}
-╔══════════════════════════════════════════════════════════════╗
-║  VOTER DASHBOARD                                           ║
-║  Shows: active elections to vote in, past voting history    ║
-╚══════════════════════════════════════════════════════════════╝
-{% endcomment %}
+    {% if candidate.approval_status == 'approved' %}
+        <div class="card">
+            <div class="flex justify-between mb-10 flex-wrap">
+                <h3>
+                    My Manifestos ({{ manifestos|length }})
+                    <span class="collapse-toggle" onclick="toggleCollapse(this)">&#9660;</span>
+                </h3>
+                <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
+            </div>
+            <div class="collapse-content">
+                {% if manifestos %}
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <tr><th>Title</th><th>Categories</th><th>Latest Status</th><th>Actions</th></tr>
+                            {% for m in manifestos %}
+                                {% with latest=m.updates.first %}
+                                <tr>
+                                    <td><strong>{{ m.title }}</strong></td>
+                                    <td>
+                                        {% for cat in m.categories.all %}
+                                            <span class="badge badge-info">{{ cat.name }}</span>
+                                        {% empty %}
+                                            <span class="badge badge-warning">Uncategorized</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if latest %}
+                                            <span class="badge 
+                                                {% if latest.status == 'completed' %}badge-success
+                                                {% elif latest.status == 'in_progress' %}badge-info
+                                                {% elif latest.status == 'delayed' %}badge-danger
+                                                {% else %}badge-warning{% endif %}">
+                                                {{ latest.get_status_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-warning">No updates</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
+                                </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">&#128221;</div>
+                        <p>No manifestos yet. <a href="{% url 'manifesto_create' %}">Create your first manifesto item.</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
 {% else %}
-    <!-- Active elections the voter can participate in -->
     {% if active_elections %}
         <div class="card">
-            <h3>Active Elections</h3>
-            {% for election in active_elections %}
-                <div class="card" style="box-shadow: none; border: 1px solid #eee; margin-bottom: 10px;">
-                    <div class="flex justify-between">
-                        <div>
-                            <h4>{{ election.title }}</h4>
-                            <p style="color:#666;font-size:0.85rem;">{{ election.description|truncatewords:20 }}</p>
-                            <p style="font-size:0.85rem;"><strong>Ends:</strong> {{ election.end_date|date:"M d, Y H:i" }}</p>
+            <h3>
+                Active Elections
+                <span class="collapse-toggle" onclick="toggleCollapse(this)">&#9660;</span>
+            </h3>
+            <div class="collapse-content">
+                {% for election in active_elections %}
+                    <div class="card" style="box-shadow: none; border: 1px solid #eee; margin-bottom: 10px;">
+                        <div class="flex justify-between">
+                            <div>
+                                <h4>{{ election.title }}</h4>
+                                <p style="color:#666;font-size:0.85rem;">{{ election.description|truncatewords:20 }}</p>
+                                <p style="font-size:0.85rem;"><strong>Ends:</strong> {{ election.end_date|date:"M d, Y H:i" }}</p>
+                            </div>
+                            <a href="{% url 'vote' election.id %}" class="btn btn-success">Cast Your Vote</a>
                         </div>
-                        <a href="{% url 'vote' election.id %}" class="btn btn-success">Cast Your Vote</a>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     {% else %}
         <div class="card">
@@ -203,36 +213,52 @@
         </div>
     {% endif %}
 
-    <!-- Past elections the voter participated in -->
     {% if past_elections %}
         <div class="card">
-            <h3>My Voting History ({{ voted_election_ids|length }} elections participated)</h3>
-            {% for e in past_elections %}
-                <div style="border:1px solid #eee; padding:12px; border-radius:6px; margin-bottom:8px;">
-                    <div class="flex justify-between">
-                        <div>
-                            <strong>{{ e.title }}</strong><br>
-                            <small style="color:#666;">{{ e.start_date|date:"M Y" }} - {{ e.end_date|date:"M Y" }}</small>
-                        </div>
-                        <div>
-                            {% if e.id in voted_election_ids %}
-                                <span class="badge badge-success">Voted</span>
-                            {% else %}
-                                <span class="badge badge-warning">Did not vote</span>
-                            {% endif %}
-                            <a href="{% url 'results_detail' e.id %}" class="btn btn-sm">Results</a>
-                            <a href="{% url 'manifesto_tracking_detail' e.id %}" class="btn btn-sm">Tracking</a>
+            <h3>
+                My Voting History ({{ voted_election_ids|length }} elections participated)
+                <span class="collapse-toggle" onclick="toggleCollapse(this)">&#9660;</span>
+            </h3>
+            <div class="collapse-content">
+                {% for e in past_elections %}
+                    <div style="border:1px solid #eee; padding:12px; border-radius:6px; margin-bottom:8px;">
+                        <div class="flex justify-between">
+                            <div>
+                                <strong>{{ e.title }}</strong><br>
+                                <small style="color:#666;">{{ e.start_date|date:"M Y" }} - {{ e.end_date|date:"M Y" }}</small>
+                            </div>
+                            <div>
+                                {% if e.id in voted_election_ids %}
+                                    <span class="badge badge-success">Voted</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Did not vote</span>
+                                {% endif %}
+                                <a href="{% url 'results_detail' e.id %}" class="btn btn-sm">Results</a>
+                                <a href="{% url 'manifesto_tracking_detail' e.id %}" class="btn btn-sm">Tracking</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     {% endif %}
 
-    <!-- Quick links -->
     <div class="flex flex-wrap" style="gap: 10px;">
         <a href="{% url 'results' %}" class="btn btn-outline">View All Results</a>
         <a href="{% url 'manifesto_tracking' %}" class="btn btn-outline">Manifesto Tracking</a>
     </div>
 {% endif %}
+
+<script>
+function toggleCollapse(el) {
+    var content = el.parentElement.nextElementSibling;
+    if (!content || !content.classList.contains('collapse-content')) {
+        content = el.closest('.card').querySelector('.collapse-content');
+    }
+    if (content) {
+        content.style.display = content.style.display === 'none' ? '' : 'none';
+        el.classList.toggle('collapsed');
+    }
+}
+</script>
 {% endblock %}

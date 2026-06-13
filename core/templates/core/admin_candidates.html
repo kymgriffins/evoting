@@ -14,14 +14,16 @@
                 <div class="flex justify-between flex-wrap">
                     <div>
                         <strong style="font-size:1rem;">{{ c.user.get_full_name|default:c.user.username }}</strong>
-                        <span class="badge badge-info" style="margin-left:6px;">{{ c.position }}</span><br>
-                        <small style="color:var(--text-muted);">{{ c.bio|truncatewords:25 }}</small>
+                        <span class="badge badge-info" style="margin-left:6px;">{{ c.position }}</span>
+                        <span class="badge badge-warning">Pending</span><br>
+                        <small style="color:var(--text-muted);">{{ c.election.title }}</small>
+                        <small style="color:var(--text-muted); display:block;">{{ c.bio|truncatewords:25 }}</small>
                     </div>
                     <form method="post" class="flex gap-sm">
                         {% csrf_token %}
                         <input type="hidden" name="candidate_id" value="{{ c.id }}">
                         <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
-                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger" onclick="return confirm('Reject this candidate?')">Reject</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger" onclick="return confirm('Reject this candidate? Their role will revert to voter.')">Reject</button>
                     </form>
                 </div>
             </div>
@@ -43,7 +45,15 @@
                     <td><strong>{{ c.user.get_full_name|default:c.user.username }}</strong></td>
                     <td>{{ c.position }}</td>
                     <td>{{ c.election.title }}</td>
-                    <td>{% if c.is_approved %}<span class="badge badge-success">Approved</span>{% else %}<span class="badge badge-warning">Pending</span>{% endif %}</td>
+                    <td>
+                        {% if c.approval_status == 'approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif c.approval_status == 'rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
                 <tr><td colspan="4" class="empty-state">No candidates registered.</td></tr>

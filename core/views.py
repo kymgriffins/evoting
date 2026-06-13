@@ -13,12 +13,13 @@ from rest_framework import viewsets, permissions, status  # Django REST Framewor
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog
+from .models import User, Election, Position, Candidate, Manifesto, Vote, ManifestoUpdate, ManifestoRating, AuditLog, Category
 from .forms import (UserRegisterForm, CandidateForm, ManifestoForm,
                     ManifestoUpdateForm, ManifestoRatingForm, ElectionForm, PositionForm)
 from .serializers import (UserSerializer, ElectionSerializer, PositionSerializer,
                           CandidateSerializer, ManifestoSerializer, VoteSerializer,
-                          ManifestoUpdateSerializer, ManifestoRatingSerializer, AuditLogSerializer)
+                          ManifestoUpdateSerializer, ManifestoRatingSerializer, AuditLogSerializer,
+                          CategorySerializer)
 
 
 # ─── HELPER FUNCTIONS ────────────────────────────────────────
@@ -74,11 +75,42 @@ def register(request):
 
 def results(request, election_id=None):
     """Public election results page — shows vote counts per candidate.
-    If election_id is given, shows that election. Otherwise shows all past elections."""
+    If election_id is given, shows that election. Otherwise shows all past elections.
+    Candidates must opt-in to view all results (requirement 6)."""
     if election_id:
         elections = Election.objects.filter(id=election_id)
     else:
         elections = Election.objects.filter(end_date__lt=timezone.now())
+
+    is_candidate = request.user.is_authenticated and request.user.role == 'candidate'
+    view_all = request.GET.get('view_all') == '1'
+
+    if is_candidate and not view_all:
+        try:
+            my_profile = request.user.candidate_profile
+            my_election_id = my_profile.election_id
+            results_data = []
+            for election in elections:
+                if election.id != my_election_id and election.id != request.GET.get('election_id'):
+                    continue
+                positions_data = []
+                for position in election.positions.all():
+                    candidates = Candidate.objects.filter(position=position, is_approved=True)
+                    candidate_data = []
+                    for c in candidates:
+                        vote_count = Vote.objects.filter(candidate=c, election=election).count()
+                        candidate_data.append({'candidate': c, 'vote_count': vote_count})
+                    candidate_data.sort(key=lambda x: x['vote_count'], reverse=True)
+                    positions_data.append({'position': position, 'candidates': candidate_data})
+                results_data.append({'election': election, 'positions': positions_data})
+            return render(request, 'core/results.html', {
+                'results': results_data,
+                'is_candidate': True,
+                'view_all': False,
+                'my_election_id': my_election_id,
+            })
+        except Candidate.DoesNotExist:
+            pass
 
     results_data = []
     for election in elections:
@@ -89,11 +121,15 @@ def results(request, election_id=None):
             for c in candidates:
                 vote_count = Vote.objects.filter(candidate=c, election=election).count()
                 candidate_data.append({'candidate': c, 'vote_count': vote_count})
-            candidate_data.sort(key=lambda x: x['vote_count'], reverse=True)  # Highest votes first
+            candidate_data.sort(key=lambda x: x['vote_count'], reverse=True)
             positions_data.append({'position': position, 'candidates': candidate_data})
         results_data.append({'election': election, 'positions': positions_data})
 
-    return render(request, 'core/results.html', {'results': results_data})
+    return render(request, 'core/results.html', {
+        'results': results_data,
+        'is_candidate': is_candidate,
+        'view_all': True,
+    })
 
 
 def manifesto_tracking(request, election_id=None):
@@ -132,37 +168,23 @@ def manifesto_tracking(request, election_id=None):
 
 
 def leaderboard(request):
-    """Public leaderboard — ranks candidates by success rate.
-    Success rate = % of manifesto items that have been completed.
-    Sorts by success_rate DESC, then avg_rating DESC.
-    Top 3 get medals on the HTML page."""
+    """Public leaderboard — ranks candidates by average rating.
+    Removed success rate and vote counts — only rating matters."""
     candidates = Candidate.objects.filter(is_approved=True).select_related('user', 'position', 'election')
     ranking = []
     for c in candidates:
-        total_manif = Manifesto.objects.filter(candidate=c).count()
-        if total_manif == 0:
-            continue
-        completed = ManifestoUpdate.objects.filter(
-            manifesto__candidate=c, status='completed'
-        ).values('manifesto').distinct().count()
-        success_rate = round((completed / total_manif) * 100, 1)
-        rating_count = ManifestoRating.objects.filter(manifesto__candidate=c).count()
         avg_rating = ManifestoRating.objects.filter(manifesto__candidate=c).aggregate(
             avg=models.Avg('rating')
         )['avg']
-        total_votes = Vote.objects.filter(candidate=c).count()
+        rating_count = ManifestoRating.objects.filter(manifesto__candidate=c).count()
 
         ranking.append({
             'candidate': c,
-            'total_manifestos': total_manif,
-            'completed_manifestos': completed,
-            'success_rate': success_rate,
             'avg_rating': round(avg_rating, 1) if avg_rating else 0,
             'rating_count': rating_count,
-            'total_votes': total_votes,
         })
 
-    ranking.sort(key=lambda x: (x['success_rate'], x['avg_rating']), reverse=True)
+    ranking.sort(key=lambda x: x['avg_rating'], reverse=True)
     for idx, r in enumerate(ranking, 1):
         r['rank'] = idx
 
@@ -239,16 +261,21 @@ def dashboard(request):
 def candidate_setup(request):
     """First-time setup for candidates after registration.
     They pick their election, position, and write a bio.
-    Admin must approve before they appear on ballot."""
+    Candidate requests to be vetted — admin must approve."""
     if request.user.role != 'candidate':
         messages.error(request, 'You must register as a candidate first.')
         return redirect('register')
 
-    if Candidate.objects.filter(user=request.user).exists():
-        return redirect('dashboard')
+    existing = Candidate.objects.filter(user=request.user).first()
+    if existing:
+        if existing.approval_status == 'rejected':
+            messages.info(request, 'Your previous request was rejected. You can submit a new request.')
+            existing.delete()
+        else:
+            return redirect('dashboard')
 
-    active_elections = Election.objects.filter(is_active=True)
-    positions = Position.objects.filter(election__in=active_elections)
+    all_elections = Election.objects.all()
+    positions = Position.objects.all()
     if request.method == 'POST':
         form = CandidateForm(request.POST)
         if form.is_valid():
@@ -257,26 +284,27 @@ def candidate_setup(request):
             if not election_id:
                 messages.error(request, 'Please select an election.')
                 return render(request, 'core/candidate_setup.html', {
-                    'form': form, 'elections': active_elections, 'positions': positions,
+                    'form': form, 'elections': all_elections, 'positions': positions,
                 })
             if str(position.election_id) != election_id:
                 messages.error(request, 'Selected position does not belong to the chosen election.')
                 return render(request, 'core/candidate_setup.html', {
-                    'form': form, 'elections': active_elections, 'positions': positions,
+                    'form': form, 'elections': all_elections, 'positions': positions,
                 })
             candidate = form.save(commit=False)
             candidate.user = request.user
             candidate.election_id = election_id
+            candidate.approval_status = 'pending'
             candidate.save()
-            log_audit(request.user, 'Candidate profile created', request=request)
-            messages.success(request, 'Candidate profile created! Awaiting admin approval.')
+            log_audit(request.user, 'Candidate profile created — vetting requested', request=request)
+            messages.success(request, 'Vetting request submitted! Awaiting admin approval.')
             return redirect('dashboard')
         messages.error(request, 'Please correct the errors below.')
     else:
         form = CandidateForm()
 
     return render(request, 'core/candidate_setup.html', {
-        'form': form, 'elections': active_elections, 'positions': positions,
+        'form': form, 'elections': all_elections, 'positions': positions,
     })
 
 
@@ -318,6 +346,7 @@ def manifesto_create(request):
             manifesto = form.save(commit=False)
             manifesto.candidate = candidate
             manifesto.save()
+            form.save_m2m()
             log_audit(request.user, f'Manifesto created: {manifesto.title}', request=request)
             messages.success(request, 'Manifesto item added!')
             return redirect('manage_manifestos')
@@ -452,8 +481,12 @@ def admin_elections(request):
         form = ElectionForm()
 
     elections = Election.objects.all()
+    election_data = []
+    for e in elections:
+        approved_count = Candidate.objects.filter(election=e, is_approved=True).count()
+        election_data.append({'election': e, 'approved_count': approved_count})
     return render(request, 'core/admin_elections.html', {
-        'form': form, 'elections': elections,
+        'form': form, 'elections': elections, 'election_data': election_data,
     })
 
 
@@ -471,8 +504,13 @@ def admin_election_edit(request, pk):
         messages.error(request, 'Please correct the errors below.')
     else:
         form = ElectionForm(instance=election)
+    elections = Election.objects.all()
+    election_data = []
+    for e in elections:
+        approved_count = Candidate.objects.filter(election=e, is_approved=True).count()
+        election_data.append({'election': e, 'approved_count': approved_count})
     return render(request, 'core/admin_elections.html', {
-        'form': form, 'editing': True, 'elections': Election.objects.all(),
+        'form': form, 'editing': True, 'elections': elections, 'election_data': election_data,
     })
 
 
@@ -501,11 +539,23 @@ def admin_positions(request, election_id):
 
 @login_required
 @user_passes_test(is_admin)
+def admin_election_activate(request, pk):
+    """Admin: Toggle election active state"""
+    election = get_object_or_404(Election, pk=pk)
+    election.is_active = True
+    election.save()
+    log_audit(request.user, f'Activated election: {election.title}', request=request)
+    messages.success(request, f'"{election.title}" is now active! Voters can cast ballots.')
+    return redirect('admin_elections')
+
+
+@login_required
+@user_passes_test(is_admin)
 def admin_candidates(request):
     """Admin: Approve or reject candidate registrations.
     Pending candidates appear at top with Approve/Reject buttons."""
     candidates = Candidate.objects.all()
-    pending = Candidate.objects.filter(is_approved=False)
+    pending = Candidate.objects.filter(approval_status='pending')
 
     if request.method == 'POST':
         candidate_id = request.POST.get('candidate_id')
@@ -513,16 +563,20 @@ def admin_candidates(request):
         candidate = get_object_or_404(Candidate, id=candidate_id)
         if action == 'approve':
             candidate.is_approved = True
+            candidate.approval_status = 'approved'
             candidate.user.role = 'candidate'
             candidate.user.save()
             candidate.save()
             log_audit(request.user, f'Approved candidate: {candidate.user.username}', request=request)
             messages.success(request, 'Candidate approved!')
         elif action == 'reject':
-            log_audit(request.user, f'Rejected candidate: {candidate.user.username}', request=request)
             candidate.is_approved = False
+            candidate.approval_status = 'rejected'
+            candidate.user.role = 'voter'
+            candidate.user.save()
             candidate.save()
-            messages.success(request, f'Candidate {candidate.user.username} rejected.')
+            log_audit(request.user, f'Rejected candidate: {candidate.user.username}', request=request)
+            messages.success(request, f'Candidate {candidate.user.username} rejected (reverted to voter).')
         return redirect('admin_candidates')
 
     return render(request, 'core/admin_candidates.html', {
@@ -602,6 +656,13 @@ class ManifestoUpdateViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
+class CategoryViewSet(viewsets.ModelViewSet):
+    """API: List/create/update/delete categories"""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
 class ManifestoRatingViewSet(viewsets.ModelViewSet):
     """API: List/create/update/delete manifesto ratings.
     The rater is set automatically to the logged-in user."""
@@ -656,7 +717,7 @@ def api_manifesto_tracking(request, election_id):
             updates = ManifestoUpdate.objects.filter(manifesto=m)
             latest = updates.first()
             manifestos.append({
-                'id': m.id, 'title': m.title, 'category': m.category,
+                'id': m.id, 'title': m.title, 'categories': [cat.name for cat in m.categories.all()],
                 'latest_status': latest.status if latest else 'not_started',
                 'updates': ManifestoUpdateSerializer(updates, many=True).data,
             })
@@ -673,15 +734,10 @@ def api_manifesto_tracking(request, election_id):
 @permission_classes([permissions.AllowAny])
 def api_leaderboard(request):
     """GET /api/leaderboard/
-    Returns all candidates ranked by success rate (completed manifestos / total)
-    and average star rating. Used by external apps/widgets."""
+    Returns all candidates ranked by average star rating only."""
     candidates = Candidate.objects.filter(is_approved=True)
     data = []
     for c in candidates:
-        total = Manifesto.objects.filter(candidate=c).count()
-        completed = ManifestoUpdate.objects.filter(
-            manifesto__candidate=c, status='completed'
-        ).values('manifesto').distinct().count()
         avg_rating = ManifestoRating.objects.filter(manifesto__candidate=c).aggregate(
             avg=models.Avg('rating')
         )['avg']
@@ -690,13 +746,9 @@ def api_leaderboard(request):
             'name': c.user.get_full_name() or c.user.username,
             'position': c.position.title if c.position else None,
             'election': c.election.title,
-            'total_manifestos': total,
-            'completed_manifestos': completed,
-            'success_rate': round((completed / total) * 100, 1) if total else 0,
             'avg_rating': round(avg_rating, 1) if avg_rating else 0,
-            'total_votes': Vote.objects.filter(candidate=c).count(),
         })
-    data.sort(key=lambda x: (x['success_rate'], x['avg_rating']), reverse=True)
+    data.sort(key=lambda x: x['avg_rating'], reverse=True)
     for i, d in enumerate(data, 1):
         d['rank'] = i
     return Response({'leaderboard': data})

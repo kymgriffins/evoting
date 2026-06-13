@@ -166,6 +166,11 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
         .empty-state p { font-size: 0.95rem; }
 
+        .collapse-toggle { cursor: pointer; font-size: 0.7rem; margin-left: 8px; opacity: 0.5; transition: transform 0.2s; display: inline-block; user-select: none; vertical-align: middle; }
+        .collapse-toggle:hover { opacity: 1; }
+        .collapse-toggle.collapsed { transform: rotate(-90deg); }
+        .collapse-content { overflow: hidden; transition: max-height 0.3s ease; }
+
         .flex { display: flex; gap: 10px; align-items: center; }
         .flex-wrap { flex-wrap: wrap; }
         .justify-between { justify-content: space-between; }
