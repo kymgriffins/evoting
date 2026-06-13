@@ -486,7 +486,7 @@ def admin_elections(request):
         approved_count = Candidate.objects.filter(election=e, is_approved=True).count()
         election_data.append({'election': e, 'approved_count': approved_count})
     return render(request, 'core/admin_elections.html', {
-        'form': form, 'elections': elections, 'election_data': election_data,
+        'form': form, 'elections': elections, 'election_data': election_data, 'now': timezone.now(),
     })
 
 
@@ -510,7 +510,7 @@ def admin_election_edit(request, pk):
         approved_count = Candidate.objects.filter(election=e, is_approved=True).count()
         election_data.append({'election': e, 'approved_count': approved_count})
     return render(request, 'core/admin_elections.html', {
-        'form': form, 'editing': True, 'elections': elections, 'election_data': election_data,
+        'form': form, 'editing': True, 'elections': elections, 'election_data': election_data, 'now': timezone.now(),
     })
 
 
@@ -540,8 +540,14 @@ def admin_positions(request, election_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_election_activate(request, pk):
-    """Admin: Toggle election active state"""
+    """Admin: Activate an election — only if end_date is in the future"""
     election = get_object_or_404(Election, pk=pk)
+    now = timezone.now()
+    if election.end_date < now:
+        messages.error(request, f'Cannot activate "{election.title}" — its end date ({election.end_date.strftime("%b %d, %Y %H:%M")}) is already in the past.')
+        return redirect('admin_elections')
+    if election.start_date < now:
+        messages.warning(request, f'Note: "{election.title}" start date is in the past. Voters can still cast ballots until the end date.')
     election.is_active = True
     election.save()
     log_audit(request.user, f'Activated election: {election.title}', request=request)

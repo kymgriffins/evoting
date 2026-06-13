@@ -56,17 +56,23 @@
                 <tr class="election-row">
                     <td><strong>{{ e.title }}</strong></td>
                     <td>
-                        {% if e.is_active %}
+                        {% if e.end_date < now %}
+                            <span class="badge badge-info">Past</span>
+                        {% elif e.is_active %}
                             <span class="badge badge-success">Active</span>
                         {% else %}
                             <span class="badge badge-warning">Inactive</span>
                         {% endif %}
                     </td>
                     <td style="font-size:0.8rem;">
-                        {% if e.positions.count == 0 %}
+                        {% if e.end_date < now %}
+                            <span style="color:var(--text-muted);">&#10003; Ended {{ e.end_date|date:"M d, Y" }}</span>
+                        {% elif e.positions.count == 0 %}
                             <span style="color:var(--warning);">&#9654; Add positions first</span>
                         {% elif ed.approved_count == 0 %}
                             <span style="color:var(--warning);">&#9654; Approve candidates</span>
+                        {% elif not e.is_active and e.start_date < now %}
+                            <span style="color:var(--info);">&#9654; Start date passed — can still activate until {{ e.end_date|date:"M d" }}</span>
                         {% elif not e.is_active %}
                             <span style="color:var(--info);">&#9654; Ready to activate</span>
                         {% else %}
@@ -80,7 +86,7 @@
                         <div class="flex gap-sm">
                             <a href="{% url 'admin_positions' e.id %}" class="btn btn-sm">Positions</a>
                             <a href="{% url 'admin_election_edit' e.id %}" class="btn btn-sm btn-warning">Edit</a>
-                            {% if not e.is_active and e.positions.count > 0 %}
+                            {% if not e.is_active and e.positions.count > 0 and e.end_date >= now %}
                                 <a href="{% url 'admin_election_activate' e.id %}" class="btn btn-sm btn-success" onclick="return confirm('Activate this election? Voters will be able to cast ballots.')">Activate</a>
                             {% endif %}
                         </div>

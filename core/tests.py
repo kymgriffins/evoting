@@ -157,18 +157,36 @@ class AdminElectionFlowTest(TestCase):
         self.assertEqual(election.positions.count(), 1)
 
     def test_admin_can_activate_election(self):
-        """Admin can activate an election"""
+        """Admin can activate an election with future dates"""
         election = Election.objects.create(
             title='Test', start_date=timezone.now() + timedelta(days=1),
             end_date=timezone.now() + timedelta(days=8), is_active=False,
         )
         Position.objects.create(election=election, title='President', order=1)
-        c = Client()
+        c = Client(HTTP_HOST='localhost:8000')
         c.login(username='admin', password='admin123')
         resp = c.get(reverse('admin_election_activate', args=[election.id]))
         self.assertEqual(resp.status_code, 302)
         election.refresh_from_db()
         self.assertTrue(election.is_active)
+
+    def test_admin_cannot_activate_past_election(self):
+        """Admin cannot activate an election whose end_date has passed"""
+        election = Election.objects.create(
+            title='Past Election',
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=3), is_active=False,
+        )
+        Position.objects.create(election=election, title='President', order=1)
+        c = Client(HTTP_HOST='localhost:8000')
+        c.login(username='admin', password='admin123')
+        resp = c.get(reverse('admin_election_activate', args=[election.id]))
+        self.assertEqual(resp.status_code, 302)
+        election.refresh_from_db()
+        self.assertFalse(election.is_active, 'Past election should not be activated')
+        # Should still show on admin elections page
+        resp2 = c.get(reverse('admin_elections'))
+        self.assertContains(resp2, 'Past Election')
 
     def test_election_next_step_indicator(self):
         """Election table shows correct next step guidance"""
