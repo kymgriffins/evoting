@@ -238,7 +238,7 @@ def dashboard(request):
             candidate = user.candidate_profile
         except Candidate.DoesNotExist:
             return redirect('candidate_setup')
-        my_manifestos = Manifesto.objects.filter(candidate=candidate)
+        my_manifestos = Manifesto.objects.filter(candidate=candidate).prefetch_related('updates', 'categories')
         return render(request, 'core/dashboard.html', {
             'section': 'candidate', 'candidate': candidate,
             'manifestos': my_manifestos, 'active_elections': active_elections,
@@ -323,7 +323,7 @@ def manage_manifestos(request):
         messages.warning(request, 'Your candidate profile is pending approval.')
         return redirect('dashboard')
 
-    manifestos = Manifesto.objects.filter(candidate=candidate)
+    manifestos = Manifesto.objects.filter(candidate=candidate).prefetch_related('updates', 'categories')
     return render(request, 'core/manifesto_list.html', {
         'manifestos': manifestos, 'candidate': candidate,
     })
@@ -481,12 +481,23 @@ def admin_elections(request):
         form = ElectionForm()
 
     elections = Election.objects.all()
+    now = timezone.now()
     election_data = []
+    active_count = 0
+    inactive_count = 0
+    past_count = 0
     for e in elections:
         approved_count = Candidate.objects.filter(election=e, is_approved=True).count()
         election_data.append({'election': e, 'approved_count': approved_count})
+        if e.end_date < now:
+            past_count += 1
+        elif e.is_active:
+            active_count += 1
+        else:
+            inactive_count += 1
     return render(request, 'core/admin_elections.html', {
-        'form': form, 'elections': elections, 'election_data': election_data, 'now': timezone.now(),
+        'form': form, 'elections': elections, 'election_data': election_data, 'now': now,
+        'active_count': active_count, 'inactive_count': inactive_count, 'past_count': past_count,
     })
 
 
@@ -585,8 +596,11 @@ def admin_candidates(request):
             messages.success(request, f'Candidate {candidate.user.username} rejected (reverted to voter).')
         return redirect('admin_candidates')
 
+    approved = Candidate.objects.filter(approval_status='approved')
+    rejected = Candidate.objects.filter(approval_status='rejected')
     return render(request, 'core/admin_candidates.html', {
         'candidates': candidates, 'pending': pending,
+        'approved': approved, 'rejected': rejected,
     })
 
 

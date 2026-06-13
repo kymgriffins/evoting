@@ -42,10 +42,13 @@
     </form>
 </div>
 
-<div class="card">
-    <div class="flex justify-between flex-wrap mb-10">
-        <h3>All Elections</h3>
-        <span class="badge badge-info">{{ elections|length }} total</span>
+<div class="card tab-container">
+    <h3 class="mb-10">All Elections <span class="badge badge-info">{{ elections|length }} total</span></h3>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this, 'all')">All <span class="tab-count">{{ elections|length }}</span></button>
+        <button class="tab-btn" onclick="switchTab(this, 'active')">Active <span class="tab-count">{{ active_count }}</span></button>
+        <button class="tab-btn" onclick="switchTab(this, 'inactive')">Inactive <span class="tab-count">{{ inactive_count }}</span></button>
+        <button class="tab-btn" onclick="switchTab(this, 'past')">Past <span class="tab-count">{{ past_count }}</span></button>
     </div>
     <input type="text" class="search-bar" id="electionSearch" placeholder="Search elections..." oninput="filterElections()">
     <div style="overflow-x:auto;">
@@ -53,7 +56,7 @@
             <tr><th>Title</th><th>Status</th><th>Next Step</th><th>Start</th><th>End</th><th>Positions</th><th>Actions</th></tr>
             {% for ed in election_data %}
                 {% with e=ed.election %}
-                <tr class="election-row">
+                <tr class="election-row" data-status="{% if e.end_date < now %}past{% elif e.is_active %}active{% else %}inactive{% endif %}">
                     <td><strong>{{ e.title }}</strong></td>
                     <td>
                         {% if e.end_date < now %}
@@ -98,6 +101,10 @@
             {% endfor %}
         </table>
     </div>
+    <div class="tab-content active" data-tab="all"></div>
+    <div class="tab-content" data-tab="active"></div>
+    <div class="tab-content" data-tab="inactive"></div>
+    <div class="tab-content" data-tab="past"></div>
 </div>
 
 {% if request.GET.clone %}
@@ -115,10 +122,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 function filterElections() {
+    var activeTab = document.querySelector('.tab-container .tab-btn.active');
+    var status = activeTab ? activeTab.textContent.trim().toLowerCase().split(' ')[0] : 'all';
     var q = document.getElementById('electionSearch').value.toLowerCase();
     document.querySelectorAll('.election-row').forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        var show = true;
+        if (q && !row.textContent.toLowerCase().includes(q)) show = false;
+        if (status !== 'all' && row.dataset.status !== status) show = false;
+        row.style.display = show ? '' : 'none';
     });
+}
+function switchTab(btn, tabName) {
+    var container = btn.closest('.tab-container');
+    container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    filterElections();
 }
 </script>
 {% endblock %}

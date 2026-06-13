@@ -5,10 +5,7 @@
 
 {% if pending %}
     <div class="card">
-        <div class="flex justify-between mb-10">
-            <h3>Pending Approvals</h3>
-            <span class="badge badge-warning">{{ pending|length }} pending</span>
-        </div>
+        <h3 class="mb-10">Pending Approvals</h3>
         {% for c in pending %}
             <div style="border:1px solid var(--border); padding:16px; border-radius:10px; margin-bottom:10px; background:#fafafa;">
                 <div class="flex justify-between flex-wrap">
@@ -31,17 +28,20 @@
     </div>
 {% endif %}
 
-<div class="card">
-    <div class="flex justify-between flex-wrap mb-10">
-        <h3>All Candidates</h3>
-        <span class="badge badge-info">{{ candidates|length }} total</span>
+<div class="card tab-container">
+    <h3 class="mb-10">All Candidates <span class="badge badge-info">{{ candidates|length }} total</span></h3>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this, 'all')">All <span class="tab-count">{{ candidates|length }}</span></button>
+        <button class="tab-btn" onclick="switchTab(this, 'pending')">Pending <span class="tab-count">{{ pending|length }}</span></button>
+        <button class="tab-btn" onclick="switchTab(this, 'approved')">Approved <span class="tab-count">{{ approved|length }}</span></button>
+        <button class="tab-btn" onclick="switchTab(this, 'rejected')">Rejected <span class="tab-count">{{ rejected|length }}</span></button>
     </div>
     <input type="text" class="search-bar" id="candidateSearch" placeholder="Search candidates..." oninput="filterCandidates()">
     <div style="overflow-x:auto;">
         <table id="candidateTable">
             <tr><th>Name</th><th>Position</th><th>Election</th><th>Status</th></tr>
             {% for c in candidates %}
-                <tr class="candidate-row">
+                <tr class="candidate-row" data-status="{{ c.approval_status }}">
                     <td><strong>{{ c.user.get_full_name|default:c.user.username }}</strong></td>
                     <td>{{ c.position }}</td>
                     <td>{{ c.election.title }}</td>
@@ -60,13 +60,28 @@
             {% endfor %}
         </table>
     </div>
+    <div class="tab-content active" data-tab="all"></div>
+    <div class="tab-content" data-tab="approved"></div>
+    <div class="tab-content" data-tab="pending"></div>
+    <div class="tab-content" data-tab="rejected"></div>
 </div>
 <script>
 function filterCandidates() {
+    var activeTab = document.querySelector('.tab-container .tab-btn.active');
+    var status = activeTab ? activeTab.textContent.trim().toLowerCase().split(' ')[0] : 'all';
     var q = document.getElementById('candidateSearch').value.toLowerCase();
     document.querySelectorAll('.candidate-row').forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        var show = true;
+        if (q && !row.textContent.toLowerCase().includes(q)) show = false;
+        if (status !== 'all' && row.dataset.status !== status) show = false;
+        row.style.display = show ? '' : 'none';
     });
+}
+function switchTab(btn, tabName) {
+    var container = btn.closest('.tab-container');
+    container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    filterCandidates();
 }
 </script>
 {% endblock %}

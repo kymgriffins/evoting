@@ -1,72 +1,85 @@
 {% extends "core/base.html" %}
+{% load manifesto_extras %}
 {% block title %}My Manifestos{% endblock %}
 {% block content %}
-<div class="card">
+<div class="card tab-container">
     <div class="flex justify-between flex-wrap">
-        <h3>
-            My Manifesto Items
-            <span class="collapse-toggle" onclick="toggleCollapse(this)">&#9660;</span>
-        </h3>
+        <h3>My Manifesto Items</h3>
         <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>
     </div>
-    <input type="text" class="search-bar" id="manifestoSearch" placeholder="Search manifestos..." oninput="filterManifestos()">
-    <div class="collapse-content">
-        {% if manifestos %}
-            <div style="overflow-x:auto;">
-                <table id="manifestoTable">
-                    <tr><th>Title</th><th>Categories</th><th>Created</th><th>Status</th><th>Actions</th></tr>
-                    {% for m in manifestos %}
-                        {% with latest=m.updates.first %}
-                        <tr class="manifesto-row">
-                            <td><strong>{{ m.title }}</strong></td>
-                            <td>
-                                {% for cat in m.categories.all %}
-                                    <span class="badge badge-info">{{ cat.name }}</span>
-                                {% empty %}
-                                    <span class="badge badge-warning">Uncategorized</span>
-                                {% endfor %}
-                            </td>
-                            <td>{{ m.created_at|date:"M d, Y" }}</td>
-                            <td>
-                                {% if latest %}
-                                    <span class="badge 
-                                        {% if latest.status == 'completed' %}badge-success
-                                        {% elif latest.status == 'in_progress' %}badge-info
-                                        {% elif latest.status == 'delayed' %}badge-danger
-                                        {% else %}badge-warning{% endif %}">
-                                        {{ latest.get_status_display }}
-                                    </span>
-                                {% else %}
-                                    <span class="badge badge-warning">No updates</span>
-                                {% endif %}
-                            </td>
-                            <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
-                        </tr>
-                        {% endwith %}
-                    {% endfor %}
-                </table>
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="icon">&#128221;</div>
-                <p>No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
-            </div>
-        {% endif %}
-    </div>
+    {% if manifestos %}
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab(this, 'all')">All <span class="tab-count">{{ manifestos|length }}</span></button>
+            <button class="tab-btn" onclick="switchTab(this, 'no_updates')">No Updates <span class="tab-count">{{ manifestos|count_status:'none' }}</span></button>
+            <button class="tab-btn" onclick="switchTab(this, 'in_progress')">In Progress <span class="tab-count">{{ manifestos|count_status:'in_progress' }}</span></button>
+            <button class="tab-btn" onclick="switchTab(this, 'completed')">Completed <span class="tab-count">{{ manifestos|count_status:'completed' }}</span></button>
+            <button class="tab-btn" onclick="switchTab(this, 'delayed')">Delayed <span class="tab-count">{{ manifestos|count_status:'delayed' }}</span></button>
+        </div>
+        <input type="text" class="search-bar" id="manifestoSearch" placeholder="Search manifestos..." oninput="filterManifestos()">
+        <div style="overflow-x:auto;">
+            <table id="manifestoTable">
+                <tr><th>Title</th><th>Categories</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+                {% for m in manifestos %}
+                    {% with latest=m.updates.first %}
+                    <tr class="manifesto-row" data-status="{% if latest %}{{ latest.status }}{% else %}none{% endif %}">
+                        <td><strong>{{ m.title }}</strong></td>
+                        <td>
+                            {% for cat in m.categories.all %}
+                                <span class="badge badge-info">{{ cat.name }}</span>
+                            {% empty %}
+                                <span class="badge badge-warning">Uncategorized</span>
+                            {% endfor %}
+                        </td>
+                        <td>{{ m.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if latest %}
+                                <span class="badge 
+                                    {% if latest.status == 'completed' %}badge-success
+                                    {% elif latest.status == 'in_progress' %}badge-info
+                                    {% elif latest.status == 'delayed' %}badge-danger
+                                    {% else %}badge-warning{% endif %}">
+                                    {{ latest.get_status_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-warning">No updates</span>
+                            {% endif %}
+                        </td>
+                        <td><a href="{% url 'manifesto_updates' m.id %}" class="btn btn-sm">Updates</a></td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state" style="margin-top:16px;">
+            <div class="icon">&#128221;</div>
+            <p>No manifesto items yet. <a href="{% url 'manifesto_create' %}">Create your first one.</a></p>
+        </div>
+    {% endif %}
+    <div class="tab-content active" data-tab="all"></div>
+    <div class="tab-content" data-tab="no_updates"></div>
+    <div class="tab-content" data-tab="in_progress"></div>
+    <div class="tab-content" data-tab="completed"></div>
+    <div class="tab-content" data-tab="delayed"></div>
 </div>
 <script>
 function filterManifestos() {
+    var activeTab = document.querySelector('.tab-container .tab-btn.active');
+    var status = activeTab ? activeTab.textContent.trim().toLowerCase().split(' ')[0] : 'all';
+    if (status === 'no') status = 'none';
     var q = document.getElementById('manifestoSearch').value.toLowerCase();
     document.querySelectorAll('.manifesto-row').forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        var show = true;
+        if (q && !row.textContent.toLowerCase().includes(q)) show = false;
+        if (status !== 'all' && row.dataset.status !== status) show = false;
+        row.style.display = show ? '' : 'none';
     });
 }
-function toggleCollapse(el) {
-    var content = el.closest('.card').querySelector('.collapse-content');
-    if (content) {
-        content.style.display = content.style.display === 'none' ? '' : 'none';
-        el.classList.toggle('collapsed');
-    }
+function switchTab(btn, tabName) {
+    var container = btn.closest('.tab-container');
+    container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    filterManifestos();
 }
 </script>
 {% endblock %}

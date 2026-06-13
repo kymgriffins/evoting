@@ -171,6 +171,15 @@
         .collapse-toggle.collapsed { transform: rotate(-90deg); }
         .collapse-content { overflow: hidden; transition: max-height 0.3s ease; }
 
+        .tab-bar { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid var(--border); overflow-x: auto; }
+        .tab-btn { padding: 10px 20px; font-size: 0.85rem; font-weight: 500; background: none; border: none; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: var(--transition); white-space: nowrap; }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-count { font-size: 0.7rem; background: var(--bg); color: var(--text-muted); border-radius: 10px; padding: 1px 8px; margin-left: 4px; font-weight: 400; }
+        .tab-btn.active .tab-count { background: var(--primary); color: #fff; }
+
         .flex { display: flex; gap: 10px; align-items: center; }
         .flex-wrap { flex-wrap: wrap; }
         .justify-between { justify-content: space-between; }
@@ -270,6 +279,14 @@
             var menu = document.getElementById('navMenu');
             if (!e.target.closest('nav')) { menu.classList.remove('open'); }
         });
+        function switchTab(btnGroup, tabName) {
+            var container = btnGroup.closest('.tab-container') || btnGroup.parentElement;
+            container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            container.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            btnGroup.classList.add('active');
+            var content = container.querySelector('.tab-content[data-tab="' + tabName + '"]');
+            if (content) content.classList.add('active');
+        }
     </script>
 </body>
 </html>

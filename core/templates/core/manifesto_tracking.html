@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load manifesto_extras %}
 {% block title %}Manifesto Tracking{% endblock %}
 {% block content %}
 <div class="flex justify-between flex-wrap mb-10">
@@ -8,7 +9,20 @@
     </div>
 </div>
 
-<input type="text" class="search-bar" id="trackingSearch" placeholder="Search candidates or manifestos..." oninput="filterTracking()">
+<div class="card tab-container">
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this, 'all')">All</button>
+        <button class="tab-btn" onclick="switchTab(this, 'No Updates')">No Updates</button>
+        <button class="tab-btn" onclick="switchTab(this, 'In Progress')">In Progress</button>
+        <button class="tab-btn" onclick="switchTab(this, 'Completed')">Completed</button>
+        <button class="tab-btn" onclick="switchTab(this, 'Delayed')">Delayed</button>
+    </div>
+    <input type="text" class="search-bar" id="trackingSearch" placeholder="Search candidates or manifestos..." oninput="filterTracking()">
+
+    {% for td in tracking_data %}
+        <div class="tab-content{% if forloop.first %} active{% endif %}" data-tab="all"></div>
+    {% endfor %}
+</div>
 
 {% for td in tracking_data %}
     <div class="card">
@@ -45,7 +59,7 @@
                                 <th>Action</th>
                             </tr>
                             {% for md in cd.manifestos %}
-                                <tr class="manifesto-track-row">
+                                <tr class="manifesto-track-row" data-status="{{ md.latest_status }}">
                                     <td><strong>{{ md.manifesto.title }}</strong></td>
                                     <td>
                                         {% for cat in md.manifesto.categories.all %}
@@ -150,19 +164,65 @@
             if (e.target === this) closeRatingForm();
         });
         function filterTracking() {
+            var activeTab = document.querySelector('.tab-container .tab-btn.active');
+            var status = activeTab ? activeTab.textContent.trim() : 'All';
             var q = document.getElementById('trackingSearch').value.toLowerCase();
             document.querySelectorAll('.tracking-candidate').forEach(function(el) {
-                el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+                var visible = true;
+                if (q && !el.textContent.toLowerCase().includes(q)) visible = false;
+                if (status !== 'All') {
+                    var hasMatch = false;
+                    el.querySelectorAll('.manifesto-track-row').forEach(function(row) {
+                        var match = row.dataset.status === status;
+                        row.style.display = match ? '' : 'none';
+                        if (match) hasMatch = true;
+                    });
+                    if (!hasMatch) visible = false;
+                } else {
+                    el.querySelectorAll('.manifesto-track-row').forEach(function(row) {
+                        row.style.display = '';
+                    });
+                }
+                el.style.display = visible ? '' : 'none';
             });
+        }
+        function switchTab(btn, tabName) {
+            var container = btn.closest('.tab-container');
+            container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            filterTracking();
         }
     </script>
 {% else %}
     <script>
         function filterTracking() {
+            var activeTab = document.querySelector('.tab-container .tab-btn.active');
+            var status = activeTab ? activeTab.textContent.trim() : 'All';
             var q = document.getElementById('trackingSearch').value.toLowerCase();
             document.querySelectorAll('.tracking-candidate').forEach(function(el) {
-                el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+                var visible = true;
+                if (q && !el.textContent.toLowerCase().includes(q)) visible = false;
+                if (status !== 'All') {
+                    var hasMatch = false;
+                    el.querySelectorAll('.manifesto-track-row').forEach(function(row) {
+                        var match = row.dataset.status === status;
+                        row.style.display = match ? '' : 'none';
+                        if (match) hasMatch = true;
+                    });
+                    if (!hasMatch) visible = false;
+                } else {
+                    el.querySelectorAll('.manifesto-track-row').forEach(function(row) {
+                        row.style.display = '';
+                    });
+                }
+                el.style.display = visible ? '' : 'none';
             });
+        }
+        function switchTab(btn, tabName) {
+            var container = btn.closest('.tab-container');
+            container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            filterTracking();
         }
     </script>
 {% endif %}
