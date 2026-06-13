@@ -131,7 +131,7 @@
     </div>
 
     {% if candidate.approval_status == 'approved' %}
-        <div class="card tab-container">
+        <div class="card tab-container" data-active-tab="all">
             <div class="flex justify-between flex-wrap">
                 <h3>My Manifestos ({{ manifestos|length }})</h3>
                 <a href="{% url 'manifesto_create' %}" class="btn btn-sm btn-success">+ Add Manifesto</a>

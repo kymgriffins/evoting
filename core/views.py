@@ -156,7 +156,7 @@ def manifesto_tracking(request, election_id=None):
                 rating_count = ManifestoRating.objects.filter(manifesto=m).count()
                 manifestos_data.append({
                     'manifesto': m,
-                    'latest_status': latest_update.get_status_display() if latest_update else 'Not Started',
+                    'latest_status': latest_update.get_status_display() if latest_update else 'No Updates',
                     'updates_count': ManifestoUpdate.objects.filter(manifesto=m).count(),
                     'avg_rating': round(avg_rating, 1) if avg_rating else 0,
                     'rating_count': rating_count,

@@ -42,7 +42,7 @@
     </form>
 </div>
 
-<div class="card tab-container">
+<div class="card tab-container" data-active-tab="all">
     <h3 class="mb-10">All Elections <span class="badge badge-info">{{ elections|length }} total</span></h3>
     <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab(this, 'all')">All <span class="tab-count">{{ elections|length }}</span></button>
@@ -122,8 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 function filterElections() {
-    var activeTab = document.querySelector('.tab-container .tab-btn.active');
-    var status = activeTab ? activeTab.textContent.trim().toLowerCase().split(' ')[0] : 'all';
+    var container = document.querySelector('.tab-container');
+    var status = container ? container.dataset.activeTab || 'all' : 'all';
     var q = document.getElementById('electionSearch').value.toLowerCase();
     document.querySelectorAll('.election-row').forEach(function(row) {
         var show = true;
@@ -136,6 +136,7 @@ function switchTab(btn, tabName) {
     var container = btn.closest('.tab-container');
     container.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
+    container.dataset.activeTab = tabName;
     filterElections();
 }
 </script>
